@@ -1,4 +1,4 @@
-function [grad,im]=colorGradient(c1,c2,depth)
+function [ grad, im ] = colorGradient( c1, c2, depth )
 % COLORGRADIENT allows you to generate a gradient between 2 given colors,
 % that can be used as colormap in your figures.
 %
@@ -29,31 +29,31 @@ function [grad,im]=colorGradient(c1,c2,depth)
 
 %Check input arguments.
 %input arguments must be 2 or 3.
-error(nargchk(2, 3, nargin));
+error( nargchk( 2, 3, nargin ) );
 
 %If c1 or c2 is not a valid RGB vector return an error.
-if numel(c1)~=3
+if numel( c1 ) ~= 3
     error('color c1 is not a valir RGB vector');
 end
-if numel(c2)~=3
+if numel( c2 ) ~= 3
     error('color c2 is not a valir RGB vector');
 end
 
-if max(c1)>1&&max(c1)<=255
+if max( c1 )>1 && max( c1 ) <= 255
     %warn if RGB values are given instead of Intensity values. Convert and
     %keep procesing.
-    warning('color c1 is not given as intensity values. Trying to convert');
+    warning( 'color c1 is not given as intensity values. Trying to convert' );
     c1=c1./255;
-elseif max(c1)>255||min(c1)<0
+elseif max( c1 ) > 255 || min( c1 ) < 0
     error('C1 RGB values are not valid.')
 end
 
-if max(c2)>1&&max(c2)<=255
+if max( c2 ) > 1 && max( c2 ) <= 255
     %warn if RGB values are given instead of Intensity values. Convert and
     %keep procesing.
     warning('color c2 is not given as intensity values. Trying to convert');
     c2=c2./255;
-elseif max(c2)>255||min(c2)<0
+elseif max( c2 ) > 255 || min( c2 ) < 0
     error('C2 RGB values are not valid.')
 end
 %default depth is 64 colors. Just in case we did not define that argument.

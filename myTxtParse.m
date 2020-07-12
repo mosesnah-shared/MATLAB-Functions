@@ -49,7 +49,6 @@ while( ~feof( fid ) )
                                                                            % (.*?) : match everything in a non-greedy way and capture it.
                                                                            % \]    : ] is a meta char and needs to be escaped if you want to match it literally. 
 
-
     tmpField = tmp{ 1 }( 2 : end - 1 );                                    % Getting the name of the data
     tmpField = tmpField( ~isspace( tmpField ) );                           % Discarding the blank space within the string
     tmpValue = cellfun( @str2double, regexp( tline , '[+-]?\d+\.?\d*', 'match' ) );    
