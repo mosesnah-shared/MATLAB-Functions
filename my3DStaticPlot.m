@@ -1,4 +1,4 @@
-function [hFig, hAxes, hPlots] = my3DStaticPlot( data, lineWidth, lineColor )
+function [ hFig, hAxes, hPlots ] = my3DStaticPlot( data, varargin ) 
 % my3DStaticPlot for plotting a time-static 3D plot of data.
 %
 % =============================================================== %
@@ -16,6 +16,10 @@ function [hFig, hAxes, hPlots] = my3DStaticPlot( data, lineWidth, lineColor )
 %   (3) lineColor:
 %       -  The line color of each data.
 %          The input will be a N x 3 data, where the column stands for R,G and B, valued between 0 and 1
+%
+%   (4) lineStyle:
+%       -  The line style for each data.
+%          The input will list of string, containing the 
 % =============================================================== %
 %
 % =============================================================== %
@@ -52,31 +56,75 @@ function [hFig, hAxes, hPlots] = my3DStaticPlot( data, lineWidth, lineColor )
 %
 % =============================================================== %
 
-% Sanity Check
-% Checking the size of whether the input data, linewidth and linecolor data are all filled.
-[tmpN, ~] = size( lineColor );
+    % Sanity Check
+    % Checking the size of whether the input data, linewidth and linecolor data are all filled.
 
-if ( length( data ) ~= length( lineWidth) ) || ( length( data ) ~= tmpN ) 
-    error( "Wrong size of input \n Input sizes are %d, %d and %d for each", ...
-                                    length( data ), length( lineWidth ), tmpN ) 
-end
+    % Simple Parser for name-value pairing.
+    p = inputParser( );
+    p.KeepUnmatched = false;
+    p.CaseSensitive = false;
+    p.StructExpand  = true;     % By setting this False, we can accept a structure as a single argument.
 
+    addParameter( p, 'lineWidth', NaN );
+    addParameter( p, 'lineColor', NaN );
+    addParameter( p, 'lineStyle', NaN );
 
-hFig  = figure();
-pos   = [0.08 0.1 0.84 0.80];                                              % Position/size for the main plot - 3D real time plot
-hAxes = axes( 'Position', pos, 'parent', hFig );                           % Defining and returning the handle of the plot
+    parse( p, varargin{ : } )
 
-hold( hAxes,'on' ); axis( hAxes, 'equal' )                                 % This will make the plot with equal ratio
+    r = p.Results;
 
+    l_w     = r.lineWidth;
+    l_c     = r.lineColor;
+    l_style = r.lineStyle;
 
-for i = 1 : length( data )
+    % Get the number of data
+    N = length( data );
+
+    if isnan( l_c )
+        l_c = repmat( [0.8200, 0.8200, 0.8200], N, 1 );                    % Setting the default color as "grey" for the line 
+    else
+        [tmpN, ~] = size( l_c );                                           % If input is not given,  
+        if ( N ~= tmpN )
+            error( "Wrong size of input \n Number of input data is %d but %d is given for style", ...
+                                                                   N,    tmpN ) 
+        end
+    end    
     
-    tmp = data{ i };
-    hPlots( i ) = plot3(  tmp(1,:), tmp(2,:), tmp(3,:)        ,  ...
-                                  'parent',   hAxes           ,  ...
-                                   'color', lineColor( i, : ) ,  ...
-                               'Linewidth', lineWidth( i )   );  
-end
+    if isnan( l_w )
+        l_w = 5 * ones( 1, N );                                            % Setting the default line width as 5
+    else
+        if ( N ~= length( l_w ) ) 
+            error( "Wrong size of input \n Number of input data is %d but %d is given for style", ...
+                                                                    N, length( l_w ) ) 
+        end           
+    end
+
+    if isnan( l_style )
+        l_style = repmat( "-", N, 1 );                                     % If lineStyle not given, setting the default line style as full line                                                     
+    else
+        if ( N ~= length( l_style ) ) 
+            error( "Wrong size of input \n Number of input data is %d but %d is given for style", ...
+                                                                    N, length( l_style ) ) 
+        end                        
+
+    end
+
+
+    hFig  = figure();
+    pos   = [0.08 0.1 0.84 0.80];                                              % Position/size for the main plot - 3D real time plot
+    hAxes = axes( 'Position', pos, 'parent', hFig );                           % Defining and returning the handle of the plot
+
+    hold( hAxes,'on' ); axis( hAxes, 'equal' )                                 % This will make the plot with equal ratio
+
+    for i = 1 : N
+
+        tmp = data{ i };
+        hPlots( i ) = plot3(  tmp(1,:), tmp(2,:), tmp(3,:)        ,  ...
+                                            'parent',   hAxes     ,  ...
+                                             'color', l_c( i, : ) ,  ...
+                                         'Linewidth', l_w( i )    ,  ...
+                                         'LineStyle', l_style( i )      );  
+    end
 
 
 end

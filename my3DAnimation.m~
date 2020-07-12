@@ -83,13 +83,8 @@ classdef my3DAnimation < handle
         hAxes_side2 = []        
         
         hPlotsMarkers_side1 = []
-        hPlotsX_side1 = []
-        hPlotsY_side1 = []
-        
         hPlotsMarkers_side2 = []
-        hPlotsX_side2 = []
-        hPlotsY_side2 = []
-                
+        
         hTitle
         hPlotsMarkers 
         hPlotsLines   = []        
@@ -328,25 +323,6 @@ classdef my3DAnimation < handle
                                                  'YData',   obj.posY( obj.lineIdx{ j }, i ), ...
                                                  'ZData',   obj.posZ( obj.lineIdx{ j }, i ) )    
                 end
-                
-                if ~isempty( obj.hPlotsMarkers_side1 )
-                    
-                    for k = 1 : length( obj.hPlotsMarkers_side1 ) 
-                        
-                        set( obj.hPlotsMarkers_side1( k ), 'XData', obj.hPlotsX_side1( k, i ), ...
-                                                           'YData', obj.hPlotsY_side1( k, i ) )
-                    end
-                    
-                end
-                
-                if ~isempty( obj.hPlotsMarkers_side2 )
-                    
-                    for k = 1 : length( obj.hPlotsMarkers_side2 ) 
-                        set( obj.hPlotsMarkers_side2( k ), 'XData', obj.hPlotsX_side2( k, i ), ...
-                                                           'YData', obj.hPlotsY_side2( k, i ) )                        
-                    end                    
-                    
-                end                
 
                 if isVidRecord                                             % If videoRecord is ON
                     frame = getframe( obj.hFig );                          % Get the current frame of the figure
@@ -372,12 +348,10 @@ classdef my3DAnimation < handle
             
             if ( idx == 1 && isempty( obj.hAxes_side1 ) )
                 obj.hAxes_side1 = subplot( 'Position', obj.pos2, 'parent', obj.hFig );        % Defining and returning the handle of the sub-plot
-                hold( obj.hAxes_side1,'on' );
             end
             
             if ( idx == 2 && isempty( obj.hAxes_side2 ) )
                 obj.hAxes_side2 = subplot( 'Position', obj.pos3, 'parent', obj.hFig );        % Defining and returning the handle of the sub-plot
-                hold( obj.hAxes_side2,'on' );
             end            
             
             if ~isempty( varargin )
@@ -456,30 +430,16 @@ classdef my3DAnimation < handle
                                                                 idx )
             end
 
-            plot( xdata, ydata, 'parent',  tmp_p  ,    ...                               
+            plot( xdata, ydata, 'parent',  tmp_p  ,    ...
+                            'MarkerSize',  ms,  ...
+                       'MarkerEdgeColor',  mc,  ...      
+                       'MarkerFaceColor',  mc,  ...                                 
                                  'color',  lc,  ...   
                              'LineWidth',  lw,  ... 
                              'LineStyle', l_sty   );
-                         
-            tmp_m = plot( xdata(1), ydata(1), 'parent', tmp_p, ...          
-                                            'Marker',   m_sty, ...
-                                        'MarkerSize',      ms, ...
-                                   'MarkerEdgeColor',      mc, ...      
-                                   'MarkerFaceColor', [1,1,1] );
-                               
-                               
-                               
-            if idx == 1
-                obj.hPlotsMarkers_side1 = [obj.hPlotsMarkers_side1, tmp_m ];
-                obj.hPlotsX_side1 = [obj.hPlotsX_side1; xdata];
-                obj.hPlotsY_side1 = [obj.hPlotsY_side1; ydata];
-                
-            elseif idx == 2
-                obj.hPlotsMarkers_side2 = [obj.hPlotsMarkers_side2, tmp_m];                 
-                obj.hPlotsX_side2 = [obj.hPlotsX_side2; xdata];
-                obj.hPlotsY_side2 = [obj.hPlotsY_side2; ydata];                
-            end
-                                  
+            
+            if 
+            hPlotsMarkers_side1                         
                          
             
         end
