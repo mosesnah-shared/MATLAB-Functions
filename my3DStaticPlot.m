@@ -56,19 +56,23 @@ function [ hFig, hAxes, hPlots ] = my3DStaticPlot( data, varargin )
 %
 % =============================================================== %
 
-    % Sanity Check
-    % Checking the size of whether the input data, linewidth and linecolor data are all filled.
 
-    % Simple Parser for name-value pairing.
+    % First, get the number of data, this is useful for sanity check.
+    N = length( data );
+    
     p = inputParser( );
-    p.KeepUnmatched = false;
-    p.CaseSensitive = false;
-    p.StructExpand  = true;     % By setting this False, we can accept a structure as a single argument.
-
-    addParameter( p, 'lineWidth', NaN );
-    addParameter( p, 'lineColor', NaN );
-    addParameter( p, 'lineStyle', NaN );
-
+    
+    
+    % [TIP] We can add a function handle for a simple input-type check
+    ckc1 = @( x ) ( isnumeric( x ) &&   all( x > 0 ) && ( length( x ) == N ) ) ;
+    ckc2 = @( x ) ( ( isstring( x ) || ischar( x ) ) && ( length( x ) == N ) ) ;
+    ckc3 = @( x ) ( isnumeric( x ) &&  all( x >= 0 & x <= 1, [1,2] ) && ( size( x, 1 ) == N ) );
+    
+  
+    addParameter( p, 'lineWidth',  5 * ones( 1, N )                        , ckc1 );
+    addParameter( p, 'lineStyle',  repmat( "-", N, 1 )                     , ckc2 );
+    addParameter( p, 'lineColor',  repmat( [0.8200, 0.8200, 0.8200], N, 1 ), ckc3 );
+    
     parse( p, varargin{ : } )
 
     r = p.Results;
@@ -76,39 +80,6 @@ function [ hFig, hAxes, hPlots ] = my3DStaticPlot( data, varargin )
     l_w     = r.lineWidth;
     l_c     = r.lineColor;
     l_style = r.lineStyle;
-
-    % Get the number of data
-    N = length( data );
-
-    if isnan( l_c )
-        l_c = repmat( [0.8200, 0.8200, 0.8200], N, 1 );                    % Setting the default color as "grey" for the line 
-    else
-        [tmpN, ~] = size( l_c );                                           % If input is not given,  
-        if ( N ~= tmpN )
-            error( "Wrong size of input \n Number of input data is %d but %d is given for style", ...
-                                                                   N,    tmpN ) 
-        end
-    end    
-    
-    if isnan( l_w )
-        l_w = 5 * ones( 1, N );                                            % Setting the default line width as 5
-    else
-        if ( N ~= length( l_w ) ) 
-            error( "Wrong size of input \n Number of input data is %d but %d is given for style", ...
-                                                                    N, length( l_w ) ) 
-        end           
-    end
-
-    if isnan( l_style )
-        l_style = repmat( "-", N, 1 );                                     % If lineStyle not given, setting the default line style as full line                                                     
-    else
-        if ( N ~= length( l_style ) ) 
-            error( "Wrong size of input \n Number of input data is %d but %d is given for style", ...
-                                                                    N, length( l_style ) ) 
-        end                        
-
-    end
-
 
     hFig  = figure();
     pos   = [0.08 0.1 0.84 0.80];                                              % Position/size for the main plot - 3D real time plot
