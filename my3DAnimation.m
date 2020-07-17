@@ -209,10 +209,15 @@ classdef my3DAnimation < handle
             %   (3) videoName (string)
             %       - name of the video for the recording.
 
+                
             N       = length( obj.tVec );
             tStep   = obj.tVec( 2 ) - obj.tVec( 1 ) ;                      % Equal time step, hence getting the first element which is the single time step value.                                                               
             simStep = round( ( 1 / tStep / 60 ) );                         % Setting 60 fps - 1 second as default!
 
+            if simStep == 0
+               simStep = 1; 
+            end
+            
             if isVidRecord                                                 % If video record is ON
 
                 fps     = 60 * vidRate;                                    % Frame-per-second of the video, 60Hz is default rate.
@@ -221,6 +226,9 @@ classdef my3DAnimation < handle
                 open( writerObj );                                         % Opening the video write file.
 
             end    
+            
+            N
+            simStep
 
             for i = 1 : simStep : N
 
