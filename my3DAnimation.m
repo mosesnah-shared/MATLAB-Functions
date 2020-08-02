@@ -46,6 +46,8 @@ classdef my3DAnimation < handle
     
     properties ( SetAccess = public )
         
+        
+        
         hFig  = []
         
         hAxes_main  = []
@@ -63,13 +65,19 @@ classdef my3DAnimation < handle
         
         hPlotsX_side1 = []
         hPlotsY_side1 = []
-        hPlotsMarkers_side1 = []        
+        hPlotsMarkers_side1 = [] 
         
         hPlotsX_side2 = []
         hPlotsY_side2 = []
         hPlotsMarkers_side2 = []
                 
         hTitle
+        
+        hEllipse
+        hEllipse_X
+        hEllipse_Y
+        hEllipse_Z
+        
 
     end
     
@@ -144,6 +152,14 @@ classdef my3DAnimation < handle
             
         end
 
+        function addEllipse( obj, X, Y, Z, varargin) 
+            % Adding a ellipse to a specific position.
+            obj.hEllipse = mesh( X{1},Y{1},Z{1}, 'parent', obj.hAxes_main ); 
+            obj.hEllipse_X = X;
+            obj.hEllipse_Y = Y;
+            obj.hEllipse_Z = Z;
+            
+        end
         
         function connect( obj, idxMarkers, varargin)
             %connect: connecting markers with lines
@@ -226,9 +242,6 @@ classdef my3DAnimation < handle
                 open( writerObj );                                         % Opening the video write file.
 
             end    
-            
-            N
-            simStep
 
             for i = 1 : simStep : N
 
@@ -264,6 +277,15 @@ classdef my3DAnimation < handle
                     end                    
                     
                 end                
+                
+                if ~isempty( obj.hEllipse )
+                    
+                    set( obj.hEllipse, 'XData', obj.hEllipse_X{ i }, ...
+                                       'YData', obj.hEllipse_Y{ i }, ...
+                                       'ZData', obj.hEllipse_Z{ i } )                        
+                
+                    
+                end                       
 
                 if isVidRecord                                             % If videoRecord is ON
                     frame = getframe( obj.hFig );                          % Get the current frame of the figure
@@ -280,6 +302,16 @@ classdef my3DAnimation < handle
 
         end
         
+%         function addZoomWindow( obj, idx )
+%             % This is the Zoom window for the plot
+%             
+%             obj.hAxes_side1 = subplot( 'Position', obj.pos1A, 'parent', obj.hFig );        % Defining and returning the handle of the sub-plot
+%             hold( obj.hAxes_side1,'on' );
+%             ttmp1 = copyobj( obj.hPlotsMarkers_main( 2 ), obj.hAxes_side1 );
+%             ttmp2 = copyobj( obj.hPlotsMarkers_main( 2 ), obj.hAxes_side1 );
+%             
+%             
+%         end
         
         function addSidePlot( obj, idx, xdata, ydata, varargin )
             
@@ -309,31 +341,33 @@ classdef my3DAnimation < handle
             ckc2 = @(x) ( isnumeric( x ) && all( x >= 0 & x <= 1        ) );
             ckc3 = @(x) ( ischar( x ) || isstring( x ) );
             
-            addParameter( p, 'lineWidth'  , 5                , ckc1 );
-            addParameter( p, 'lineColor'  , 0.82 * ones(1,3) , ckc2 );
-            addParameter( p, 'lineStyle'  , "-"              , ckc3 );
-            addParameter( p, 'addTrackingMarker', false      , @(x) islogical( x ) );
-            
+            addParameter( p,         'lineWidth', 5                , ckc1 );
+            addParameter( p,         'lineColor', 0.82 * ones(1,3) , ckc2 );
+            addParameter( p,         'lineStyle', "-"              , ckc3 );
+            addParameter( p,        'markerSize', 10               , ckc1 );
+            addParameter( p, 'addTrackingMarker', false            , @(x) islogical( x ) );
                 
             parse( p, varargin{ : } )            
 
             r = p.Results;
 
-            lw    = r.lineWidth;
-            lc    = r.lineColor;
-            l_sty = r.lineStyle;
-            isON  = r.addTrackingMarker;
+            lw     = r.lineWidth;
+            lc     = r.lineColor;
+            l_sty  = r.lineStyle;
+            ms     = r.markerSize;
+            isON   = r.addTrackingMarker;
 
+            
             if idx == 1
                 tmp_p = obj.hAxes_side1;
             elseif idx == 2
                 tmp_p = obj.hAxes_side2;
             end
 
-            plot( xdata, ydata, 'parent',  tmp_p  ,    ...                               
-                                 'color',  lc,  ...   
-                             'LineWidth',  lw,  ... 
-                             'LineStyle', l_sty   );
+            plot( xdata, ydata, 'parent',    tmp_p,  ...                               
+                                 'color',       lc,  ...   
+                             'LineWidth',       lw,  ... 
+                             'LineStyle',    l_sty   );
 
             if isON 
                tmp = 'on' ;
@@ -343,10 +377,12 @@ classdef my3DAnimation < handle
             
             tmp_m = plot( xdata(1), ydata(1), 'parent', tmp_p, ...          
                                             'Marker',     "o", ...
-                                        'MarkerSize',  2 * lw, ...
+                                        'MarkerSize',      ms, ...
                                    'MarkerEdgeColor',      lc, ...      
                                    'MarkerFaceColor', [1,1,1], ...
                                            'visible', tmp);
+                                       
+                                       
                                
             if idx == 1
                 obj.hPlotsMarkers_side1 = [obj.hPlotsMarkers_side1, tmp_m ];
