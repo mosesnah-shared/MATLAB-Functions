@@ -26,9 +26,9 @@ classdef myMarker < handle
         ydata
         zdata
         N
-        color
-        size
-        style
+        markerColor
+        markerSize
+        markerStyle
     end
     
     methods
@@ -52,9 +52,9 @@ classdef myMarker < handle
             % Parsing the arguments
             r = myParser( varargin );                
             obj.name  = r.name;
-            obj.size  = r.markerSize;
-            obj.style = r.markerStyle;
-            obj.color = r.markerColor;
+            obj.markerSize  = r.markerSize;
+            obj.markerStyle = r.markerStyle;
+            obj.markerColor = r.markerColor;
             
         end
         
