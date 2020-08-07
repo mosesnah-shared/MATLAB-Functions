@@ -188,7 +188,7 @@ classdef my3DAnimation < handle
                 
                 for g = myGraphics                      
                       ellipse = mesh( g.xmesh(:,:,1), g.ymesh(:,:,1), g.zmesh(:,:,1), ...
-                                       'parent', h2Draw );
+                                       'parent', h2Draw, 'facealpha', g.faceAlpha );
 
                      obj.hEllipses{ idx }( end + 1 ) = ellipse;       
                       obj.ellipses{ idx }( end + 1 ) = g;                               
@@ -371,7 +371,7 @@ classdef my3DAnimation < handle
                 for j = 1 : length( obj.hEllipses{ i } )
                     set( obj.hEllipses{ i }( j ), 'XData', obj.ellipses{ i }( j ).xmesh( :,:, obj.simStep ), ...
                                                   'YData', obj.ellipses{ i }( j ).ymesh( :,:, obj.simStep ), ...
-                                                  'ZData', obj.ellipses{ i }( j ).zmesh( :,:, obj.simStep )   )
+                                                  'ZData', obj.ellipses{ i }( j ).zmesh( :,:, obj.simStep ) )
                     
                 end
                  

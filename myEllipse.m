@@ -27,6 +27,8 @@ classdef myEllipse < handle
         matrix
         center
         
+        faceAlpha
+        
         minAxes
         medAxes
         maxAxes
@@ -48,6 +50,8 @@ classdef myEllipse < handle
             obj.matrix = matrix;
             obj.center = center;
             
+            r = myParser( varargin );
+            
             for i = 1 : size( matrix, 3 ) 
                 [ X,Y,Z ] = Ellipse_plot( obj.matrix(:,:,i), obj.center(:,i) );
                 obj.xmesh( :, :, i ) = X;
@@ -67,7 +71,8 @@ classdef myEllipse < handle
             end
 
             obj.name = "Ellipse" + num2str( randi ( 2^20 ) ) ;    
-                        
+            obj.faceAlpha = r.faceAlpha;
+                
         end
         
 
