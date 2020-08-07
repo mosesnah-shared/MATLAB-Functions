@@ -111,7 +111,7 @@ vEE = JEE * dq';        % End-point Velocity
 
 % [txt File List]
 
-idx = 2;
+idx = 3;
 
 if     idx == 1
     txtFile = '/Users/mosesnah/Documents/projects/WhipProjectTapering/results/3D_Movement_Analysis/Spatial_Sym_K/Target1/data_log.txt';
@@ -167,7 +167,10 @@ for i = 1 : N
     
 end
 
-% idx_list = (rawData.currentTime >= t_start) & (rawData.currentTime <= t_end);
+
+%%
+
+idx_list = find( (rawData.currentTime >= t_start) & (rawData.currentTime <= t_end) );
 % %%
 % % Find Discontinuity and make it continuous 
 % 
@@ -206,7 +209,36 @@ end
 %     rawData.dotProd3( tmp ) = -rawData.dotProd3( tmp );    
 % end
 %     
-% plot( rawData.dotProd1( idx_list ) )
+
+tmp = rawData.dotProd1( idx_list );
+
+tmp( tmp < 0 ) = - tmp( tmp < 0 );
+
+tVec = linspace( t_start, t_end, length( idx_list ) );
+plot( tVec, tmp ); 
+
+title( "[Target " + num2str( idx ) + "] Dot Product of Velocity Vector and Main Axis Vector" )
+xlabel( 'Time [sec]', 'fontsize', 30); 
+ylabel('Dot Product [-]' ,'fontsize', 30);
+set( gca,'xlim', [t_start, t_end] );
+
+tmpN = 4;
+tmp2 = get(gca, 'XTick' );
+set( gca, 'XTick', linspace( t_start, t_end, tmpN ) )
+xtickformat('%.2f')
+
+tmp1 = get(gca, 'XTickLabel' );
+
+
+tmp1{1}   = [tmp1{1},' Start'];
+tmp1{end} = [tmp1{end},' End'];
+set(gca, 'XTickLabel', tmp1 );
+
+get(gca, 'XTickLabel')
+
+mySaveFig( gcf, "output" + num2str( idx ) )
+
+
 %% (1E) time vs Plot
 
 
@@ -235,33 +267,39 @@ ani = my3DAnimation( tStep, markers );
 
 ani.connectMarkers( 1, ["Shoulder",  "Elbow", "EndEffector"], 'linecolor', c.grey )          
     
-KxEllipse = myEllipse( 0.3 * rawData.Kx, zeros( 3, N ) );
+KxEllipse = myEllipse( 0.02 * rawData.Kx, zeros( 3, N ),  'faceAlpha', 0.2 );
 
-KxMax_p = myArrow(  KxEllipse.minAxes(1,:),  KxEllipse.minAxes(2,:),  KxEllipse.minAxes(3,:), zeros(3, N ), 'arrowColor', c.green  ) ;
-KxMax_n = myArrow( -KxEllipse.minAxes(1,:), -KxEllipse.minAxes(2,:), -KxEllipse.minAxes(3,:), zeros(3, N ), 'arrowColor', c.green  ) ;
-KxMed_p = myArrow(  KxEllipse.medAxes(1,:),  KxEllipse.medAxes(2,:),  KxEllipse.medAxes(3,:), zeros(3, N ), 'arrowColor', c.blue   ) ;
-KxMed_n = myArrow( -KxEllipse.medAxes(1,:), -KxEllipse.medAxes(2,:), -KxEllipse.medAxes(3,:), zeros(3, N ), 'arrowColor', c.blue   ) ;
-KxMin_p = myArrow(  KxEllipse.maxAxes(1,:),  KxEllipse.maxAxes(2,:),  KxEllipse.maxAxes(3,:), zeros(3, N ), 'arrowColor', c.orange ) ;
-KxMin_n = myArrow( -KxEllipse.maxAxes(1,:), -KxEllipse.maxAxes(2,:), -KxEllipse.maxAxes(3,:), zeros(3, N ), 'arrowColor', c.orange ) ;
+KxMax_p = myArrow(  KxEllipse.minAxes(1,:),  KxEllipse.minAxes(2,:),  KxEllipse.minAxes(3,:), zeros(3, N ), 'arrowColor', c.green  ,'arrowWidth', 3 ) ;
+KxMax_n = myArrow( -KxEllipse.minAxes(1,:), -KxEllipse.minAxes(2,:), -KxEllipse.minAxes(3,:), zeros(3, N ), 'arrowColor', c.green  ,'arrowWidth', 3 ) ;
+KxMed_p = myArrow(  KxEllipse.medAxes(1,:),  KxEllipse.medAxes(2,:),  KxEllipse.medAxes(3,:), zeros(3, N ), 'arrowColor', c.blue   ,'arrowWidth', 3 ) ;
+KxMed_n = myArrow( -KxEllipse.medAxes(1,:), -KxEllipse.medAxes(2,:), -KxEllipse.medAxes(3,:), zeros(3, N ), 'arrowColor', c.blue   ,'arrowWidth', 3 ) ;
+KxMin_p = myArrow(  KxEllipse.maxAxes(1,:),  KxEllipse.maxAxes(2,:),  KxEllipse.maxAxes(3,:), zeros(3, N ), 'arrowColor', c.orange ,'arrowWidth', 3 ) ;
+KxMin_n = myArrow( -KxEllipse.maxAxes(1,:), -KxEllipse.maxAxes(2,:), -KxEllipse.maxAxes(3,:), zeros(3, N ), 'arrowColor', c.orange ,'arrowWidth', 3 ) ;
 
 ani.addGraphicObject( 2, KxEllipse )                                       % Add the end-point ellipse
 ani.addGraphicObject( 2, [ KxMax_p, KxMax_n, ...
                            KxMed_p, KxMed_n, ...
                            KxMin_p, KxMin_n ] );                           % Add the axes vectors of the ellipse
 
-ani.addZoomWindow( 3, 4, 0.5 ) 
+ani.addZoomWindow( 3, "EndEffector", 0.5 )                                 % Copy the main plot to subplot2 (idx = 3), 
+                                                                           % Focus on the EndEffector, window size +-0.5                     
 
-tmp1 = myArrow( rawData.vEE(1,:), rawData.vEE(2,:), rawData.vEE(3,:), ...
-                [ markers(4).xdata; markers(4).ydata; markers(4).zdata ], 'arrowColor', c.yellow ) ;
+                                                                           
+EEVec1 = myArrow(  0.2 * rawData.vEE(1,:), 0.2 * rawData.vEE(2,:), 0.2 * rawData.vEE(3,:), ...
+                [ markers(4).xdata; markers(4).ydata; markers(4).zdata ], ...   % The origin of the vector is the end-effector (idx = 4)
+                 'arrowColor', c.pink,'arrowWidth', 6 ) ;
 
-tmp2 = myEllipse( rawData.Kx, [ markers(4).xdata; markers(4).ydata; markers(4).zdata ] ) ;            
+KxEllipse_EE = myEllipse( 0.3 * rawData.Kx, [ markers(4).xdata; markers(4).ydata; markers(4).zdata ], 'faceAlpha', 0.2 ) ;            
             
-ani.addGraphicObject( 3, tmp1)
-ani.addGraphicObject( 3, tmp2)
+ani.addGraphicObject( 3, EEVec1       )
+ani.addGraphicObject( 3, KxEllipse_EE )
 
-tmp1 = myArrow( rawData.vEE(1,:), rawData.vEE(2,:), rawData.vEE(3,:), ...
-                zeros(3, size( rawData.Kx, 3 )), 'arrowColor', c.yellow ) ;          
-ani.addGraphicObject( 2, tmp1)            
+EEVec2 = myArrow( 0.5 * rawData.vEE(1,:), ...
+                  0.5 * rawData.vEE(2,:), ...
+                  0.5 * rawData.vEE(3,:), ...
+                  zeros(3, N ), 'arrowColor', c.pink,'arrowWidth', 6  ) ;
+        
+ani.addGraphicObject( 2, EEVec2 )             
 
 tmpLim = 2.4;
 set( ani.hAxes{1},   'XLim',   [ -tmpLim , tmpLim ] , ...                  
@@ -269,85 +307,13 @@ set( ani.hAxes{1},   'XLim',   [ -tmpLim , tmpLim ] , ...
                      'ZLim',   [ -tmpLim , tmpLim ] , ...
                      'view',   [44.9986   12.8650 ]     )                  
                  
-set( ani.hAxes{2},   'XLim',   0.125 * [ -tmpLim , tmpLim ] , ...          
-                     'YLim',   0.125 * [ -tmpLim , tmpLim ] , ...    
-                     'ZLim',   0.125 * [ -tmpLim , tmpLim ] , ...
+set( ani.hAxes{2},   'XLim',   0.7 * [ -tmpLim , tmpLim ] , ...          
+                     'YLim',   0.7 * [ -tmpLim , tmpLim ] , ...    
+                     'ZLim',   0.7 * [ -tmpLim , tmpLim ] , ...
                      'view',   [44.9986   12.8650 ]     )                  
 
 set( ani.hAxes{3},   'view',   [44.9986   12.8650 ]     )                  
 
                  
-ani.run( 0.2, false, 'output')      
-                 
-%%             
-             
-ani.addEllipse( X_Whole, Y_Whole, Z_Whole ) 
-ani.addZoomWindow( 4, 0.8 )
-ani.addEllipsePlot( rawData.Kx ) 
-ani.addArrow2Ellipse( rawData.vEE ) 
-
-set( ani.hA_s2E , 'view',   [44.9986   12.8650 ]     )
-
-% ani.addVectorPlot(  rawData.vEE(1,:),rawData.vEE(2,:),rawData.vEE(3,:) )
-% ani.addVectorPlot(  -rawData.minVec(1,:), -rawData.minVec(2,:), -rawData.minVec(3,:) )
-
-% ani.addVectorPlot( 0.1,0.2,0.3 )
-
-
-
-
-%%
-% Kx = rawData.Kx(:,:,1);   % The Kx to Analyze
-% [XX,YY,ZZ] = Ellipse_plot( Kx, [0,0,0] );
-% h = figure(); a = axes( 'parent', h );
-% 
-% 
-% hold on
-% % h2 = plot3(XX,YY,ZZ, 'parent', a); 
-% set(a, 'XLim', [-tmpLim,tmpLim], 'YLim', [-tmpLim,tmpLim], 'ZLim', [-tmpLim,tmpLim] )
-% 
-% tmpLim = 0.15;
-% 
-% for i = 1 :N 
-%     Kx = rawData.Kx(:,:,i); 
-%     [XX,YY,ZZ] = Ellipse_plot( Kx, [0,0,0] );
-%     set( h1, 'XData', XX, 'YData', YY, 'ZData', ZZ );
-%     drawnow 
-%     pause(0.1);
-% end
-
-%% (1F) Ellipse Plot 3D
-
-idx = 1;
-                                                
-[XX, YY, ZZ] = Ellipse_plot( 0.3 * rawData.Kx(:,:,idx), [0,0,0] );
-
-[ V, D ] = eig( rawData.Kx( :, :, idx ) );
-
-hF = figure(); hA = axes( 'parent', hF );
-hP = mesh(XX,YY,ZZ, 'parent', hA); axis equal; hold( hA,'on' );
-
-scale = 0.3;
-V = scale * V; 
-
-quiver3( 0,0,0, V(1,1), V(2,1), V(3,1), 'parent' ,hA, 'linewidth', 4, 'color', c.blue  , 'MaxheadSize', 0.4 ) 
-quiver3( 0,0,0, V(1,2), V(2,2), V(3,2), 'parent' ,hA, 'linewidth', 4, 'color', c.orange, 'MaxheadSize', 0.4 )
-quiver3( 0,0,0, V(1,3), V(2,3), V(3,3), 'parent' ,hA, 'linewidth', 4, 'color', c.yellow, 'MaxheadSize', 0.4 )
-
-%% (1G) Ellipse Plot 3D
-
-example = [ 25, 10; 10, 35];
-
-scale = 0.03 * (1:15);
-
-hF = figure(); hA = axes( 'parent', hF ); axis equal; hold( hA,'on' );
-
-for s = scale
-    [XX,YY,ZZ] = Ellipse_plot( s * example, [0,0] );
-    plot( XX, YY );
-end
-
-
-quiver( 0,0, V(1,1), V(2,1), 'parent', hA, 'linewidth', 4, 'color', c.orange, 'MaxheadSize', 0.4 ) 
-quiver( 0,0, V(1,2), V(2,2), 'parent', hA, 'linewidth', 4, 'color', c.yellow, 'MaxheadSize', 0.4 ) 
-set( hA, 'xlim', [-1.5, 1.5], 'ylim', [-1.5,1.5])
+ani.run( 0.2, true, ['output', num2str( idx )] )      
+     

@@ -18,7 +18,9 @@ function r = myParser( arguments )
     ckc2 = @( x ) ( isstring( x ) || ischar( x ) ) && ( length( x ) == 1 );                 % Style
     ckc3 = @( x ) ( isnumeric( x ) &&  all( x >= 0 & x <= 1 ) && ( length( x ) == 3 ) );    % Color
     ckc4 = @( x ) ( isstring( x ) );                                                        % Name Check
-               
+    ckc5 = @( x ) ( isnumeric( x ) && x >= 0 && x <= 1 );                                   % Color alpha
+    
+    
     addParameter( p,  'markerSize',                10, ckc1 );
     addParameter( p,   'lineWidth',                 5, ckc1 );
     
@@ -33,6 +35,7 @@ function r = myParser( arguments )
     addParameter( p,  'arrowWidth',                 4, ckc1 );
     addParameter( p,  'arrowColor',  0.82 * ones(1,3), ckc3 );    
     
+    addParameter( p,  'faceAlpha',                0.3, ckc5 );
     
     addParameter( p,        'name', "g" + num2str( randi ( 2^20 ) ), ckc4 );    
    
