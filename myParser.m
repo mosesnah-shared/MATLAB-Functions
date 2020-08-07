@@ -22,8 +22,8 @@ function r = myParser( arguments )
     addParameter( p,  'markerSize',                10, ckc1 );
     addParameter( p,   'lineWidth',                 5, ckc1 );
     
-    addParameter( p, 'markerStyle',               "o", ckc2 );
-    addParameter( p,   'lineStyle',               "-", ckc2 );    
+    addParameter( p, 'markerStyle',               'o', ckc2 );
+    addParameter( p,   'lineStyle',               '-', ckc2 );    
     
     addParameter( p, 'markerColor',  0.82 * ones(1,3), ckc3 );
     addParameter( p,   'lineColor',  0.82 * ones(1,3), ckc3 );

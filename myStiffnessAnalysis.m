@@ -105,13 +105,13 @@ K = [ 17.4,  4.0, -1.90, 8.40; ...
 Kq = ( K + K' )/2;      % Extracting out the symmetric part
 Cq = inv( Kq );         % Joint Angle Compliance exist
  
-Cx = JEE * Cq * JEE';   % End-point Compliance
+Cx  = JEE * Cq * JEE';  % End-point Compliance
 vEE = JEE * dq';        % End-point Velocity
 % Kx = inv( Cx );       % If we do this, it takes so much time to do the calculation.
 
 % [txt File List]
 
-idx = 1;
+idx = 2;
 
 if     idx == 1
     txtFile = '/Users/mosesnah/Documents/projects/WhipProjectTapering/results/3D_Movement_Analysis/Spatial_Sym_K/Target1/data_log.txt';
@@ -137,8 +137,8 @@ for i = 1 : N
     rawData.vEE(:,i ) = double( vpa( subs( vEE, [q, dq], [rawData.jointAngleActual( 1:4,i )', rawData.jointVelActual( 1:4,i )' ] ) ) );
     rawData.Kx(:,:,i) = inv( rawData.Cx(:,:,i) );   % Inverting the Compliant Matrix gives us the stiffness matrix                         
     
-    [V, D, ~ ] = svd( rawData.Kx(:,:,i) );
-    % svd is in descending order.
+    [V, ~, ~ ] = svd( rawData.Kx(:,:,i) );                                 % svd is in descending order.
+
     
     rawData.maxVec( :,i ) = V( :,1 );                                      
     rawData.medVec( :,i ) = V( :,2 );   
@@ -167,25 +167,25 @@ for i = 1 : N
     
 end
 
-idx_list = (rawData.currentTime >= t_start) & (rawData.currentTime <= t_end);
-%%
-% Find Discontinuity and make it continuous 
-
-tmp = abs( diff( rawData.dotProd1 ) ) > 0.6;
-tmp_idx(1) = 1;
-
-ttmp = 1;
-for i = 1:length( tmp )
-    if( tmp( i ) == 1 ) 
-        ttmp = -ttmp;
-    end
-    tmp_idx( i + 1 ) = ttmp;
-
-end
-
-rawData.dotProd1 = rawData.dotProd1.*tmp_idx;
-rawData.minVec   = rawData.minVec.*tmp_idx;
-% if     idx == 1
+% idx_list = (rawData.currentTime >= t_start) & (rawData.currentTime <= t_end);
+% %%
+% % Find Discontinuity and make it continuous 
+% 
+% tmp = abs( diff( rawData.dotProd1 ) ) > 0.6;
+% tmp_idx(1) = 1;
+% 
+% ttmp = 1;
+% for i = 1:length( tmp )
+%     if( tmp( i ) == 1 ) 
+%         ttmp = -ttmp;
+%     end
+%     tmp_idx( i + 1 ) = ttmp;
+% 
+% end
+% 
+% rawData.dotProd1 = rawData.dotProd1.*tmp_idx;
+% rawData.minVec   = rawData.minVec.*tmp_idx;
+% % if     idx == 1
 %     rawData.dotProd1( 19:46 ) = -rawData.dotProd1( 19:46 );
 %     rawData.dotProd2( 45:46 ) = -rawData.dotProd2( 45:46 );    
 %     rawData.dotProd3( 45:75 ) = -rawData.dotProd3( 45:75 );        
@@ -206,31 +206,20 @@ rawData.minVec   = rawData.minVec.*tmp_idx;
 %     rawData.dotProd3( tmp ) = -rawData.dotProd3( tmp );    
 % end
 %     
-plot( rawData.dotProd1( idx_list ) )
+% plot( rawData.dotProd1( idx_list ) )
 %% (1E) time vs Plot
 
-for i = 1 : N
-    
-    Kx = rawData.Kx(:,:,i);   % The Kx to Analyze
-    C  = rawData.geomXYZPositions( 10:12, i);   % The end-effector Position
-    [X,Y,Z] = Ellipse_plot( Kx, C );
-    X_Whole{i} = X; Y_Whole{i} = Y; Z_Whole{i} = Z;
-    
-    [XX,YY,ZZ] = Ellipse_plot( Kx, [0,0,0] );
-    XX_Whole{i} = XX; YY_Whole{i} = YY; ZZ_Whole{i} = ZZ;    
-    
-end
 
-tVec  = rawData.currentTime;       
-nodeN = size(rawData.geomXYZPositions, 1) / 3 ;
+tStep = rawData.currentTime(2) - rawData.currentTime(1);                   % Time Step of the simulation
+nodeN = size(rawData.geomXYZPositions, 1) / 3 ;                            % Number of markers of the simulation
+N     = length( rawData.currentTime );
+
 
 genNodes = @(x) ( "node" + (1:x) );
 
-stringList = [ "Target", "Shoulder", "Elbow", "EndEffector", genNodes( nodeN - 4 ) ];
-sizeList   = [ 10, 16, 16, 16, 8 * ones( 1, nodeN - 4 ) ];
-colorList  = [ c.green; repmat( c.pink, 3, 1); repmat( c.grey, nodeN - 4, 1 ) ];
-
-% markers = [];
+stringList = [ "Target", "Shoulder", "Elbow", "EndEffector",    genNodes( nodeN - 4 ) ];
+sizeList   = [       10,         16,      16,            16, 8 * ones( 1, nodeN - 4 ) ];
+colorList  = [  c.green;              repmat( c.pink, 3, 1); repmat( c.grey, nodeN - 4, 1 ) ];
 
 for i = 1: nodeN
     markers( i ) = myMarker( rawData.geomXYZPositions( 3 * i - 2, : ), ... 
@@ -240,36 +229,56 @@ for i = 1: nodeN
                                        'markersize',   sizeList( i ) , ...
                                       'markercolor',  colorList( i, : ) );
 end
-tmp = markers(1);
-markers(1) = [] ;
 
 % Calling the animation object for plotting
-ani = my3DAnimation( tVec(2), markers );
-ani.connectMarkers( ["Shoulder",  "Elbow", "EndEffector"] )
-ani.addMarkers( tmp )
+ani = my3DAnimation( tStep, markers );
 
-tmp1 = myEllipse( rawData.Kx, zeros( 3, size( rawData.Kx, 3 ) ) ) ;
-tmp2 = myArrow( tmp1.minAxes(1,:), tmp1.minAxes(2,:), tmp1.minAxes(3,:), zeros(3, size( rawData.Kx, 3 ) ), 'arrowColor', c.green ) ;
-tmp3 = myArrow( tmp1.medAxes(1,:), tmp1.medAxes(2,:), tmp1.medAxes(3,:), zeros(3, size( rawData.Kx, 3 ) ), 'arrowColor', c.blue ) ;
-tmp4 = myArrow( tmp1.maxAxes(1,:), tmp1.maxAxes(2,:), tmp1.maxAxes(3,:), zeros(3, size( rawData.Kx, 3 ) ), 'arrowColor', c.pink ) ;
+ani.connectMarkers( 1, ["Shoulder",  "Elbow", "EndEffector"], 'linecolor', c.grey )          
+    
+KxEllipse = myEllipse( 0.3 * rawData.Kx, zeros( 3, N ) );
 
-ani.addGraphicObject( 1, tmp1 );
-ani.addGraphicObject( 1, tmp2 );
-ani.addGraphicObject( 1, tmp3 );
-ani.addGraphicObject( 1, tmp4 );
+KxMax_p = myArrow(  KxEllipse.minAxes(1,:),  KxEllipse.minAxes(2,:),  KxEllipse.minAxes(3,:), zeros(3, N ), 'arrowColor', c.green  ) ;
+KxMax_n = myArrow( -KxEllipse.minAxes(1,:), -KxEllipse.minAxes(2,:), -KxEllipse.minAxes(3,:), zeros(3, N ), 'arrowColor', c.green  ) ;
+KxMed_p = myArrow(  KxEllipse.medAxes(1,:),  KxEllipse.medAxes(2,:),  KxEllipse.medAxes(3,:), zeros(3, N ), 'arrowColor', c.blue   ) ;
+KxMed_n = myArrow( -KxEllipse.medAxes(1,:), -KxEllipse.medAxes(2,:), -KxEllipse.medAxes(3,:), zeros(3, N ), 'arrowColor', c.blue   ) ;
+KxMin_p = myArrow(  KxEllipse.maxAxes(1,:),  KxEllipse.maxAxes(2,:),  KxEllipse.maxAxes(3,:), zeros(3, N ), 'arrowColor', c.orange ) ;
+KxMin_n = myArrow( -KxEllipse.maxAxes(1,:), -KxEllipse.maxAxes(2,:), -KxEllipse.maxAxes(3,:), zeros(3, N ), 'arrowColor', c.orange ) ;
+
+ani.addGraphicObject( 2, KxEllipse )                                       % Add the end-point ellipse
+ani.addGraphicObject( 2, [ KxMax_p, KxMax_n, ...
+                           KxMed_p, KxMed_n, ...
+                           KxMin_p, KxMin_n ] );                           % Add the axes vectors of the ellipse
+
+ani.addZoomWindow( 3, 4, 0.5 ) 
+
+tmp1 = myArrow( rawData.vEE(1,:), rawData.vEE(2,:), rawData.vEE(3,:), ...
+                [ markers(4).xdata; markers(4).ydata; markers(4).zdata ], 'arrowColor', c.yellow ) ;
+
+tmp2 = myEllipse( rawData.Kx, [ markers(4).xdata; markers(4).ydata; markers(4).zdata ] ) ;            
+            
+ani.addGraphicObject( 3, tmp1)
+ani.addGraphicObject( 3, tmp2)
+
+tmp1 = myArrow( rawData.vEE(1,:), rawData.vEE(2,:), rawData.vEE(3,:), ...
+                zeros(3, size( rawData.Kx, 3 )), 'arrowColor', c.yellow ) ;          
+ani.addGraphicObject( 2, tmp1)            
 
 tmpLim = 2.4;
-set( ani.hAxesMain,  'XLim',   [ -tmpLim , tmpLim ] , ...                  % Setting the axis ratio of x-y-z all equal.
+set( ani.hAxes{1},   'XLim',   [ -tmpLim , tmpLim ] , ...                  
                      'YLim',   [ -tmpLim , tmpLim ] , ...    
                      'ZLim',   [ -tmpLim , tmpLim ] , ...
-                     'view',   [44.9986   12.8650 ]     )                  % view(0,0) is XZ Plane
+                     'view',   [44.9986   12.8650 ]     )                  
                  
-tmpLim = 0.3;                 
-set( ani.hAxesSide1, 'XLim',   [ -tmpLim , tmpLim ] , ...                  % Setting the axis ratio of x-y-z all equal.
-                     'YLim',   [ -tmpLim , tmpLim ] , ...    
-                     'ZLim',   [ -tmpLim , tmpLim ] , ...
-                     'view',   [44.9986   12.8650 ]     )                  % view(0,0) is XZ Plane                 
+set( ani.hAxes{2},   'XLim',   0.125 * [ -tmpLim , tmpLim ] , ...          
+                     'YLim',   0.125 * [ -tmpLim , tmpLim ] , ...    
+                     'ZLim',   0.125 * [ -tmpLim , tmpLim ] , ...
+                     'view',   [44.9986   12.8650 ]     )                  
 
+set( ani.hAxes{3},   'view',   [44.9986   12.8650 ]     )                  
+
+                 
+ani.run( 0.2, false, 'output')      
+                 
 %%             
              
 ani.addEllipse( X_Whole, Y_Whole, Z_Whole ) 
@@ -284,7 +293,7 @@ set( ani.hA_s2E , 'view',   [44.9986   12.8650 ]     )
 
 % ani.addVectorPlot( 0.1,0.2,0.3 )
 
-ani.run( 0.2, true, 'output')
+
 
 
 %%
