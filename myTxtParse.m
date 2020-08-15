@@ -53,6 +53,11 @@ while( ~feof( fid ) )
     tmpField = tmpField( ~isspace( tmpField ) );                           % Discarding the blank space within the string
     tmpValue = cellfun( @str2double, regexp( tline , '[+-]?\d+\.?\d*', 'match' ) );    
                                                                            % Getting the value array of the data
+                                                                           
+    if isempty( tmpValue )  % If value isn't a value but a string (e.g., inf, nan)
+        tmpValue = NaN;
+    end
+    
     if ~isfield( rawData, tmpField )                                       % If new field, add to rawData list
          rawData.( tmpField ) = tmpValue';
     else    
