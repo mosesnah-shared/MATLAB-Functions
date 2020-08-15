@@ -306,6 +306,7 @@ classdef my3DAnimation < handle
             step = round( ( 1 / obj.tStep / 60 ) );                     % Setting 60 fps - 1 second as default!
             obj.vidRate = vidRate;     
             
+
             if step == 0                                                % In case the step is too small, then set the simStep as 1
                step = 1; 
             end
@@ -320,8 +321,8 @@ classdef my3DAnimation < handle
             end    
 
             for i = 1 : step : N
-
-                obj.step( )                                                % Run a single step of the simulation
+                
+                obj.step( step )                                           % Run a single step of the simulation
 
                 if isVidRecord                                             % If videoRecord is ON
                     frame = getframe( obj.hFigure );                       % Get the current frame of the figure
@@ -338,7 +339,7 @@ classdef my3DAnimation < handle
 
         end
         
-        function step( obj )
+        function step( obj, step )
             %run: running a single step of the simulation
 
             % Update Title
@@ -413,12 +414,14 @@ classdef my3DAnimation < handle
             end
             
             % Update the zoomed-in view's xlim, ylim and zlim
+            
             idx = find( obj.isZoomed );  % Find the index that should be changed. 
-            set( obj.hAxes{ idx },  'XLim',   [ -obj.zoomSize + obj.markers{ idx }( obj.zoomIdx ).xdata( obj.simStep ), obj.zoomSize + obj.markers{ idx }( obj.zoomIdx ).xdata( obj.simStep ) ] , ...         
-                                    'YLim',   [ -obj.zoomSize + obj.markers{ idx }( obj.zoomIdx ).ydata( obj.simStep ), obj.zoomSize + obj.markers{ idx }( obj.zoomIdx ).ydata( obj.simStep ) ] , ...    
-                                    'ZLim',   [ -obj.zoomSize + obj.markers{ idx }( obj.zoomIdx ).zdata( obj.simStep ), obj.zoomSize + obj.markers{ idx }( obj.zoomIdx ).zdata( obj.simStep ) ] )  
- 
-           obj.simStep = obj.simStep + 1;                                  % Increment the simulation step for plot.
+            if idx ~= 0
+                set( obj.hAxes{ idx },  'XLim',   [ -obj.zoomSize + obj.markers{ idx }( obj.zoomIdx ).xdata( obj.simStep ), obj.zoomSize + obj.markers{ idx }( obj.zoomIdx ).xdata( obj.simStep ) ] , ...         
+                                        'YLim',   [ -obj.zoomSize + obj.markers{ idx }( obj.zoomIdx ).ydata( obj.simStep ), obj.zoomSize + obj.markers{ idx }( obj.zoomIdx ).ydata( obj.simStep ) ] , ...    
+                                        'ZLim',   [ -obj.zoomSize + obj.markers{ idx }( obj.zoomIdx ).zdata( obj.simStep ), obj.zoomSize + obj.markers{ idx }( obj.zoomIdx ).zdata( obj.simStep ) ] )  
+            end
+           obj.simStep = obj.simStep + step;                               % Increment the simulation step for plot.
            
         end
         

@@ -27,7 +27,7 @@ c  = myColor();
 
 clear tmp*
 
-%% (1B) Symbolic Definition for the SE(3) matrix for the End-Effector (EE) forward kinematics + Jacobian.
+%% (1A) Symbolic Definition for the SE(3) matrix for the End-Effector (EE) forward kinematics + Jacobian.
 
 % Calculating the essential matrix/vectors for the upper limb model in "symbolic equations"
 % the symbol will be the each angle of the rotational joint, function of t
@@ -95,7 +95,7 @@ JEE  = myJacobian(dx, dq);                       % Getting the jacobian of the e
 % abs( tmparr1-tmparr2 ) < 1e-3
 
 
-%% (1D) Joint + End-point Stiffness Calculation
+%% (1B) Joint + End-point Stiffness Calculation
 
 K = [ 17.4,  4.0, -1.90, 8.40; ...
       9.00, 33.0,  4.40, 0.00; ...
@@ -111,64 +111,85 @@ vEE = JEE * dq';        % End-point Velocity
 
 % [txt File List]
 
-idx = 3;
+for idx = 1:6
 
-if     idx == 1
-    txtFile = '/Users/mosesnah/Documents/projects/WhipProjectTapering/results/3D_Movement_Analysis/Spatial_Sym_K/Target1/data_log.txt';
-    t_start = 0.3;
-    t_end   = t_start + 0.95;    
-elseif idx == 2
-    txtFile = '/Users/mosesnah/Documents/projects/WhipProjectTapering/results/3D_Movement_Analysis/Spatial_Sym_K/Target2/data_log.txt';
-    t_start = 0.3;
-    t_end   = t_start + 0.5788;    
-elseif idx == 3
-    txtFile = '/Users/mosesnah/Documents/projects/WhipProjectTapering/results/3D_Movement_Analysis/Spatial_Sym_K/Target3/data_log.txt';
-    t_start = 0.3;
-    t_end   = t_start + 0.95;
-end
+    if     idx == 1
+        txtFile = '/Users/mosesnah/Documents/projects/WhipProjectTapering/results/3D_Movement_Analysis/Spatial_Sym_K/Target1/data_log.txt';
+        t_start = 0.3;
+        t_end   = t_start + 0.95;    
+    elseif idx == 2
+        txtFile = '/Users/mosesnah/Documents/projects/WhipProjectTapering/results/3D_Movement_Analysis/Spatial_Sym_K/Target2/data_log.txt';
+        t_start = 0.3;
+        t_end   = t_start + 0.5788;    
+    elseif idx == 3
+        txtFile = '/Users/mosesnah/Documents/projects/WhipProjectTapering/results/3D_Movement_Analysis/Spatial_Sym_K/Target3/data_log.txt';
+        t_start = 0.3;
+        t_end   = t_start + 0.95;
+    elseif idx == 4
+        txtFile = '/Users/mosesnah/Documents/projects/WhipProjectTapering/results/3D_Movement_Analysis/Spatial_Sym_K/Target1/data_log_bad.txt';
+        t_start = 0.3;
+        t_end   = t_start + 1.07222;    
+    elseif idx == 5
+        txtFile = '/Users/mosesnah/Documents/projects/WhipProjectTapering/results/3D_Movement_Analysis/Spatial_Sym_K/Target2/data_log_bad.txt';
+        t_start = 0.3;
+        t_end   = t_start + 0.58333; 
+    elseif idx == 6
+        txtFile = '/Users/mosesnah/Documents/projects/WhipProjectTapering/results/3D_Movement_Analysis/Spatial_Sym_K/Target3/data_log_bad.txt';
+        t_start = 0.3;
+        t_end   = t_start + 0.95;
 
-rawData = myTxtParse( txtFile );
-N = length( rawData.currentTime );
 
-for i = 1 : N
-                                                                       
-                                                          
-    rawData.Cx(:,:,i) = double( vpa( subs( Cx, q, rawData.jointAngleActual( 1:4,i )' ) ) );
-    rawData.vEE(:,i ) = double( vpa( subs( vEE, [q, dq], [rawData.jointAngleActual( 1:4,i )', rawData.jointVelActual( 1:4,i )' ] ) ) );
-    rawData.Kx(:,:,i) = inv( rawData.Cx(:,:,i) );   % Inverting the Compliant Matrix gives us the stiffness matrix                         
-    
-    [V, ~, ~ ] = svd( rawData.Kx(:,:,i) );                                 % svd is in descending order.
-
-    
-    rawData.maxVec( :,i ) = V( :,1 );                                      
-    rawData.medVec( :,i ) = V( :,2 );   
-    rawData.minVec( :,i ) = V( :,3 );
-    
-    % Calculating the norm, which shows how much the vectors are aligned.
-    tmp = norm( rawData.vEE( :,i ) );
-    
-    if ( tmp ~= 0)
-        
-        tmp1 = ( rawData.minVec(:,i)' * rawData.vEE(:,i) ) / ( tmp );
-        tmp2 = ( rawData.medVec(:,i)' * rawData.vEE(:,i) ) / ( tmp );
-        tmp3 = ( rawData.maxVec(:,i)' * rawData.vEE(:,i) ) / ( tmp );        
-                 
-        rawData.dotProd1( i ) = tmp1;
-        rawData.dotProd2( i ) = tmp2;
-        rawData.dotProd3( i ) = tmp3;
-    else
-        rawData.dotProd1( i ) = 0;
-        rawData.dotProd2( i ) = 0;
-        rawData.dotProd3( i ) = 0;        
-        
     end
+
+
+
+    rawData = myTxtParse( txtFile );
+    N = length( rawData.currentTime );
+
+    for i = 1 : N
+
+
+        rawData.Cx(:,:,i) = double( vpa( subs( Cx, q, rawData.jointAngleActual( 1:4,i )' ) ) );
+        rawData.vEE(:,i ) = double( vpa( subs( vEE, [q, dq], [rawData.jointAngleActual( 1:4,i )', rawData.jointVelActual( 1:4,i )' ] ) ) );
+        rawData.Kx(:,:,i) = inv( rawData.Cx(:,:,i) );   % Inverting the Compliant Matrix gives us the stiffness matrix                         
+
+        [V, ~, ~ ] = svd( rawData.Kx(:,:,i) );                                 % svd is in descending order.
+
+
+        rawData.maxVec( :,i ) = V( :,1 );                                      
+        rawData.medVec( :,i ) = V( :,2 );   
+        rawData.minVec( :,i ) = V( :,3 );
+
+        % Calculating the norm, which shows how much the vectors are aligned.
+        tmp = norm( rawData.vEE( :,i ) );
+
+        if ( tmp ~= 0)
+
+            tmp1 = ( rawData.minVec(:,i)' * rawData.vEE(:,i) ) / ( tmp );
+            tmp2 = ( rawData.medVec(:,i)' * rawData.vEE(:,i) ) / ( tmp );
+            tmp3 = ( rawData.maxVec(:,i)' * rawData.vEE(:,i) ) / ( tmp );        
+
+            rawData.dotProd1( i ) = tmp1;
+            rawData.dotProd2( i ) = tmp2;
+            rawData.dotProd3( i ) = tmp3;
+        else
+            rawData.dotProd1( i ) = 0;
+            rawData.dotProd2( i ) = 0;
+            rawData.dotProd3( i ) = 0;        
+
+        end
+
+        fprintf( '[%d/%d]\n', i, N ); 
+
+    end
+    rawData.t_start = t_start;
+    rawData.t_end   = t_end;
     
-    fprintf( '[%d/%d]\n', i, N ); 
+    rawDataList{ idx } = rawData;
     
 end
 
-
-%%
+%% (1C) time vs. dot-product result
 
 idx_list = find( (rawData.currentTime >= t_start) & (rawData.currentTime <= t_end) );
 % %%
@@ -314,6 +335,21 @@ set( ani.hAxes{2},   'XLim',   0.7 * [ -tmpLim , tmpLim ] , ...
 
 set( ani.hAxes{3},   'view',   [44.9986   12.8650 ]     )                  
 
-                 
-ani.run( 0.2, true, ['output', num2str( idx )] )      
+               
+ani.run( 0.2, false, ['output', num2str( idx )] )      
      
+
+%% (1F) Ellipse Plot
+
+tmp = 20;            
+[XX, YY, ZZ] = Ellipse_plot( 0.3 * rawData.Kx(:,:,tmp), [0,0,0] );
+
+hF = figure(); hA = axes( 'parent', hF );
+hP = mesh(XX,YY,ZZ, 'parent', hA); axis equal; hold( hA,'on' );
+[ V, D ] = eig( rawData.Kx( :, :, tmp ) );
+scale = 0.3;
+V = scale * V; 
+
+quiver3( 0,0,0, V(1,1), V(2,1), V(3,1), 'parent' ,hA, 'linewidth', 4, 'color', c.green  , 'MaxheadSize', 0.4 ) 
+quiver3( 0,0,0, V(1,2), V(2,2), V(3,2), 'parent' ,hA, 'linewidth', 4, 'color', c.blue,    'MaxheadSize', 0.4 )
+quiver3( 0,0,0, V(1,3), V(2,3), V(3,3), 'parent' ,hA, 'linewidth', 4, 'color', c.orange, 'MaxheadSize', 0.4 )
