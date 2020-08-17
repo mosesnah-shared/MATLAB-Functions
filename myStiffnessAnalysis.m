@@ -111,7 +111,7 @@ vEE = JEE * dq';        % End-point Velocity
 
 % [txt File List]
 
-for idx = 1:6
+for idx = 1:3
 
     if     idx == 1
         txtFile = '/Users/mosesnah/Documents/projects/WhipProjectTapering/results/3D_Movement_Analysis/Spatial_Sym_K/Target1/data_log.txt';
@@ -153,9 +153,12 @@ for idx = 1:6
         rawData.vEE(:,i ) = double( vpa( subs( vEE, [q, dq], [rawData.jointAngleActual( 1:4,i )', rawData.jointVelActual( 1:4,i )' ] ) ) );
         rawData.Kx(:,:,i) = inv( rawData.Cx(:,:,i) );   % Inverting the Compliant Matrix gives us the stiffness matrix                         
 
-        [V, ~, ~ ] = svd( rawData.Kx(:,:,i) );                                 % svd is in descending order.
+        [V, D, ~ ] = svd( rawData.Kx(:,:,i) );                                 % svd is in descending order.
 
-
+        rawData.maxK( i )     = D( 1, 1 );
+        rawData.medK( i )     = D( 2, 2 );
+        rawData.minK( i )     = D( 3, 3 );        
+             
         rawData.maxVec( :,i ) = V( :,1 );                                      
         rawData.medVec( :,i ) = V( :,2 );   
         rawData.minVec( :,i ) = V( :,3 );
@@ -353,3 +356,44 @@ V = scale * V;
 quiver3( 0,0,0, V(1,1), V(2,1), V(3,1), 'parent' ,hA, 'linewidth', 4, 'color', c.green  , 'MaxheadSize', 0.4 ) 
 quiver3( 0,0,0, V(1,2), V(2,2), V(3,2), 'parent' ,hA, 'linewidth', 4, 'color', c.blue,    'MaxheadSize', 0.4 )
 quiver3( 0,0,0, V(1,3), V(2,3), V(3,3), 'parent' ,hA, 'linewidth', 4, 'color', c.orange, 'MaxheadSize', 0.4 )
+
+
+%% (1G) Dot Product Analysis.
+
+idx = 3;
+rawData = rawDataList{ idx };
+
+if idx == 1
+    thres = 0.9;
+    
+elseif idx == 2
+    thres = 1.2;
+    
+elseif idx == 3
+    thres = 0.2;
+    
+end
+
+idx_list = find( rawData.currentTime >= rawData.t_start & rawData.currentTime <= rawData.t_end  );
+
+hold on
+plot( rawData.currentTime( idx_list ), rawData.minVec(1,idx_list ), '--', 'linewidth', 4 )
+plot( rawData.currentTime( idx_list ), rawData.minVec(2,idx_list ), '--', 'linewidth', 4 ) 
+plot( rawData.currentTime( idx_list ), rawData.minVec(3,idx_list ), '--', 'linewidth', 4 ) 
+plot( rawData.currentTime( idx_list ), rawData.dotProd1(idx_list ), '-' , 'linewidth', 5 ) 
+
+% ul =   1;
+% ll =  -1;
+% set( gca, 'Ylim', [ll, ul] );
+set( gca, 'XLim', [rawData.t_start, rawData.t_end] )
+% ha = fill([rawData.t_start, rawData.t_start, rawData.t_end, rawData.t_end], [ll, ul, ul, ll], [0,0,1]);
+% ha.FaceAlpha = 0.1;
+% ha.EdgeAlpha = 0.0;
+
+% Adding the start and end time of the graph
+% set( gca, 'xtick', sort( [rawData.t_start, round( rawData.t_end, 2 ), linspace( min( get(gca, 'xtick' ) ), max( get(gca, 'xtick' ) ), 5 ) , ] ) );
+
+legend( {'x component', 'y component', 'z component', 'Dot Product' }, 'location', 'northeastoutside') 
+title( 'Eigenvector Components and its dot product' ); xlabel( 'Time [sec]' ); ylabel( 'Arbitrary Unit [-]' );
+
+mySaveFig( gcf, ['dotproduct', num2str(idx)] )
