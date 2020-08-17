@@ -57,13 +57,14 @@ N     = length( rawData.currentTime );
 genNodes = @(x) ( "node" + (1:x) );
 
 % Setting the name for the markers
-stringList = [ "NAMETHEGEOM1", "NAMETHEGEOM2", "NAMETHEGEOM3", "NAMETHEGEOM4",  genNodes( 10 ) ];
+nodeN = 25;     % Number of nodes of the whip.
+stringList = [ "NAMETHEGEOM1", "NAMETHEGEOM2", "NAMETHEGEOM3", "NAMETHEGEOM4",  genNodes( nodeN ) ];
 
 % Setting the size of each markers
-sizeList   = [       10,         16,      16,            16, 8 * ones( 1, 10 ) ];
+sizeList   = [    16,      16,            16, 8 * ones( 1, nodeN ) ];
 
 % Setting the color of each markers
-colorList  = [  c.green;              repmat( c.pink, 3, 1); repmat( c.grey, 10 , 1 ) ];
+colorList  = [      repmat( c.pink, 3, 1); repmat( c.grey, nodeN , 1 ) ];
 
 for i = 1: length( sizeList )
     markers( i ) = myMarker( rawData.geomXYZPositions( 3 * i - 2, : ), ... 
@@ -75,7 +76,7 @@ for i = 1: length( sizeList )
 end
 
 ani = my3DAnimation( tStep, markers );
-ani.connectMarkers( 1, ["NAMETHEGEOM2",  "NAMETHEGEOM3", "NAMETHEGEOM4"], 'linecolor', c.grey )        
+ani.connectMarkers( 1, ["NAMETHEGEOM1",  "NAMETHEGEOM2", "NAMETHEGEOM3"], 'linecolor', c.grey )        
                                                                            % Connecting the markers with a line.
 
 tmpLim = 2.0;
