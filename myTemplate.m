@@ -88,4 +88,23 @@ set( ani.hAxes{1},   'XLim',   [ -tmpLim , tmpLim ] , ...
 
 
 willSave = false;           % Set this as 'true' if you want to save the video
-ani.run( 0.2, willSave, 'output' )     
+ani.run( 0.2, willSave, 'output' ) 
+
+%% (3-) Plot for the time vs. velocity
+%% (3a) Read the data_log.txt
+
+% For the animation, you need to have the 'data_log.txt' file.
+rawData = myTxtParse( 'data_log.txt' );
+
+%% (3b) Velocity Calculation
+% Calculate the velocity 
+
+tmpN = size( rawData.geomXYZVelocities, 1 ); N = tmpN/3; clear tmp*
+
+for i = 1 : N
+   
+    tmp = rawData.geomXYZVelocities( 3 * i - 2 : 3 * i, : );
+    
+    vel( i, : ) = vecnorm( tmp );
+end
+
