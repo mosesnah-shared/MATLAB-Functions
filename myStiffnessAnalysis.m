@@ -97,7 +97,7 @@ JEE  = myJacobian(dx, dq);                       % Getting the jacobian of the e
 
 %% (1B) Joint + End-point Stiffness Calculation
 
-K = [ 17.4,  4.0, -1.90, 8.40; ...
+K = [ 17.4,  4.7, -1.90, 8.40; ...
       9.00, 33.0,  4.40, 0.00; ...
      -13.6,  3.0, 27.70, 0.00; ...
       8.40,  0.0,  0.00, 23.2];
@@ -397,3 +397,19 @@ legend( {'x component', 'y component', 'z component', 'Dot Product' }, 'location
 title( 'Eigenvector Components and its dot product' ); xlabel( 'Time [sec]' ); ylabel( 'Arbitrary Unit [-]' );
 
 mySaveFig( gcf, ['dotproduct', num2str(idx)] )
+
+
+%% (2A) Iteration vs. Optimization
+
+for i = 1: 3
+   rawData{i} = myTxtParse( ['optimization_log_t',num2str( i ),'.txt'] );
+    
+end
+%%
+hold on; alp = 0.7;
+p1 = plot( rawData{1}.Iter, rawData{1}.output, 'color', [c.pink,  alp] );
+p2 = plot( rawData{2}.Iter, rawData{2}.output, 'color', [c.blue,  alp] );
+p3 = plot( rawData{3}.Iter, rawData{3}.output, 'color', [c.green, alp] );
+
+xlabel( 'Iteration [-]', 'fontsize', 30 ); ylabel( 'L* [m]', 'fontsize', 30 );
+legend( 'Target 1', 'Target 2', 'Target 3', 'fontsize', 30 )
