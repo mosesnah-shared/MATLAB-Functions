@@ -30,6 +30,8 @@ function r = myParser( arguments )
     addParameter( p, 'markerColor',  0.82 * ones(1,3), ckc3 );
     addParameter( p,   'lineColor',  0.82 * ones(1,3), ckc3 );
     
+    addParameter( p, 'markerAlpha',                 1, ckc5 );
+    
     % For arrow (quiver) properties
     addParameter( p, 'maxHeadSize',               0.4, ckc1 );
     addParameter( p,  'arrowWidth',                 4, ckc1 );

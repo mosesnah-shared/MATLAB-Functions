@@ -94,17 +94,61 @@ ani.run( 0.2, willSave, 'output' )
 %% (3a) Read the data_log.txt
 
 % For the animation, you need to have the 'data_log.txt' file.
-rawData = myTxtParse( 'data_log.txt' );
-
+rawData1 = myTxtParse( 'linear_data_log.txt' );
+rawData2 = myTxtParse( 'nontapered_data_log.txt' );
+rawData = {rawData1, rawData2};
 %% (3b) Velocity Calculation
 % Calculate the velocity 
 
-tmpN = size( rawData.geomXYZVelocities, 1 ); N = tmpN/3; clear tmp*
+num = 30;
+mat = bone( num );
+
+idx = 1;
+
+if idx == 1
+    startTime = 0.3; endTime = 0.3 + 0.58333;
+elseif idx == 2
+    startTime = 0.3; endTime = 0.3 + 0.40679; 
+end
+
+tmpN = size( rawData{idx}.geomXYZVelocities, 1 ); N = tmpN/3; clear tmp*
 
 for i = 1 : N
    
-    tmp = rawData.geomXYZVelocities( 3 * i - 2 : 3 * i, : );
+    tmp = rawData{ idx }.geomXYZVelocities( 3 * i - 2 : 3 * i, : );
     
     vel( i, : ) = vecnorm( tmp );
+    
 end
+
+hold on
+% for i = 1 : 25
+%     plot( rawData{ idx }.currentTime, vel( i + 3,: ), 'color', mat( i,: ) )
+% end
+% h = fill( [startTime, endTime, endTime , startTime],[0,0,450,450], 'blue');
+% h.FaceAlpha=0.1; h.EdgeAlpha=0;
+
+
+for i = 1 : 25
+    plot3( i * ones(1, size(tmp,2 ) ),  rawData{ idx }.currentTime, vel( i + 3,: ), 'color', mat( i,: ) )
+end
+
+
+set( gca, 'xlim', [1, 25] );
+set( gca, 'ylim', [0.3, 1.0] );
+set( gca, 'zlim', [0.0, 450] );
+set( gca, 'view', [53.3167, 22.1331] );
+xlabel( 'Node Number[-]', 'fontsize', 40 )
+ylabel( 'Time [sec]', 'fontsize', 40 )
+zlabel( 'Velocity [m/s]', 'fontsize', 40 )
+% yline( 340, 'linestyle', '--', 'linewidth',2 )
+
+
+% set( gca, 'xlim', [0.3, 1.0] );
+% set( gca, 'ylim', [  0, 450] );
+% xlabel( 'Time [sec]', 'fontsize', 40 )
+% ylabel( 'Velocity [m/s]', 'fontsize', 40 )
+% yline( 340, 'linestyle', '--', 'linewidth',2 )
+mySaveFig( gcf, ['output', num2str( idx ) ] )
+
 

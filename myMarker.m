@@ -29,6 +29,7 @@ classdef myMarker < handle
         markerColor
         markerSize
         markerStyle
+        markerAlpha
     end
     
     methods
@@ -55,6 +56,7 @@ classdef myMarker < handle
             obj.markerSize  = r.markerSize;
             obj.markerStyle = r.markerStyle;
             obj.markerColor = r.markerColor;
+            obj.markerAlpha = r.markerAlpha;
             
         end
         
