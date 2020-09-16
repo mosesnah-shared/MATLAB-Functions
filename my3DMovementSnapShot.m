@@ -12,7 +12,7 @@ clear all; close all; clc;
 workspace;
 cd( fileparts( matlab.desktop.editor.getActiveFilename ) );                % Setting the current directory as the folder where this "main.m" script is located
 
-myFigureConfig(  'fontsize',  20, ...
+myFigureConfig(  'fontsize',  30, ...
                 'lineWidth',   5, ...
                'markerSize',  25 );         
               
@@ -24,7 +24,8 @@ clear tmp*
 
 for i = 1 : 3
     
-   rawData{ i } = myTxtParse( ['data_log_T', num2str( i ), '.txt']  );
+%    rawData{ i } = myTxtParse( ['data_log_T', num2str( i ), '.txt']  );
+    rawData{ i } = myTxtParse( ['data_log_dense_T', num2str( i ), '.txt']  );
    
    rawData{ i }.geomXPositions = rawData{ i }.geomXYZPositions( 1 : 3 : end , : );
    rawData{ i }.geomYPositions = rawData{ i }.geomXYZPositions( 2 : 3 : end , : );
@@ -113,11 +114,11 @@ idx = 1;
 switch idx 
    
     case 1
-        tStart = 0.3; D = 0.950;
+        tStart = 0.1; D = 0.950; % tStart = 0.3 if not Dense!
     case 2
-        tStart = 0.3; D = 0.579;
+        tStart = 0.1; D = 0.579;
     case 3
-        tStart = 0.3; D = 0.950;
+        tStart = 0.1; D = 0.950;
 end
 
 idxS = find( rawData{ idx }.currentTime >= tStart & rawData{ idx }.currentTime <= tStart + D );	
@@ -215,7 +216,7 @@ idx2 = 2;       % 1: EL, 2: EE
 switch idx 
    
     case 1
-        tStart = 0.3; D = 0.950;
+        tStart = 0.3; D = 0.950; % tStart = 0.3 if not Dense!
     case 2
         tStart = 0.3; D = 0.579;
     case 3
@@ -245,10 +246,13 @@ z = rawData{ idx }.geomZPositions( idx2 + 2, idxS )';
 p  = [ x, y, z ];
 pC = mean( p );
 
-[ eigvecs, ~, eigvals ] = pca( p );                                        % Running the PCA of the data
+pn = p - pC;                                                               % Centralized data
+[eigvecs, eigvals] = eig(pn' * pn);
+
+[ eigvecs2, ~, eigvals2 ] = pca( p );                                        % Running the PCA of the data
 
 % The last vector of eigvecs correspond to the normal vector of the plane, which is the smallest pca value of the data matrix
-w = null( eigvecs( : , 3)' );                                              % Find two orthonormal vectors which are orthogonal to v
+w = null( eigvecs( : , 1)' );                                              % Find two orthonormal vectors which are orthogonal to v
 
 
 scatter3( rawData{ idx }.geomXPositions( 2, idxStart ), ...
@@ -270,27 +274,25 @@ scatter3(  rawData{ idx }.geomXPositions( idx2 + 2, idxS ), ...
            'MarkerFaceColor', c.white, 'MarkerEdgeColor', color, ...
            'MarkerFaceAlpha', 1      , 'MarkerEdgeAlpha', 1  );           
        
-tmpLim2 = 0.6;
-tmpLim = ( max( get( gca, 'XLim' ) ) - min( get( gca, 'XLim' ) ) ) / 2 ;       
-tmpLim = min( tmpLim, tmpLim2 );       
+
+tmpLim = 0.45;      
 
 tmp = 0;
 for i = 1 : length( idxS )  % Brute force calculation of the distance.
-    ttmp = abs( eigvecs(1,3) * ( x(i) - pC(1) ) + eigvecs(2,3) * ( y(i) - pC(2) ) + eigvecs(3,3) * ( z(i) - pC(3) )  ) ;
+    ttmp = abs( eigvecs(1,1) * ( x(i) - pC(1) ) + eigvecs(2,1) * ( y(i) - pC(2) ) + eigvecs(3,1) * ( z(i) - pC(3) )  ) ;
     tmp = tmp + ttmp * ttmp;
 end
 
-tmp
 sqrt( tmp/length( idxS ) )
 
-[P,Q] = meshgrid( -tmpLim : 0.001 : tmpLim );                              % Provide a gridwork (you choose the size)
+[P,Q] = meshgrid( -tmpLim: 0.001 : tmpLim );                              % Provide a gridwork (you choose the size)
 
 XX = pC( 1 ) + w(1,1) * P + w(1,2) * Q;                                    % Compute the corresponding cartesian coordinates
 YY = pC( 2 ) + w(2,1) * P + w(2,2) * Q;                                    %   using the two vectors in w
 ZZ = pC( 3 ) + w(3,1) * P + w(3,2) * Q;
        
 surf( XX, YY, ZZ, 'parent', a, 'edgecolor', 'none', 'facecolor', color, 'facealpha', 0.3 )
-
+tmpLim2 = 0.7;
 xlabel( 'X [m]', 'fontsize', 30 ); 
 ylabel( 'Y [m]', 'fontsize', 30 );
 zlabel( 'Z [m]', 'fontsize', 30 );
@@ -301,3 +303,70 @@ set( a,   'XLim',   [ - tmpLim2, tmpLim2 ] , ...                             % S
           'ZLim',   [ - tmpLim2, tmpLim2 ] , ...
           'view',   [  44.3530, 7.4481 ] )  
                
+      
+%% (1E) Calculating the contribution of the each eigenmovements.
+
+K = [ 17.4,  4.7, -1.90, 8.40; ...
+      9.00, 33.0,  4.40, 0.00; ...
+     -13.6,  3.0, 27.70, 0.00; ...
+      8.40,  0.0,  0.00, 23.2];
+  
+Ksym = ( K + K' )/2;      % Extracting out the symmetric part
+
+[V, D] = eig( Ksym );
+
+v1 = V( :,1 );
+v2 = V( :,2 );
+v3 = V( :,3 );
+v4 = V( :,4 );      % Ordered in ascending order of the size of eigenvalues. 
+
+idx = 3;
+
+switch idx 
+   
+    case 1
+        tStart = 0.3; D = 0.950; % tStart = 0.3 if not Dense!
+    case 2
+        tStart = 0.3; D = 0.579;
+    case 3
+        tStart = 0.3; D = 0.950;
+end
+
+idxS = find( rawData{ idx }.currentTime >= tStart & rawData{ idx }.currentTime <= tStart + D );	
+idxStart = min( idxS ); idxEnd = max( idxS );
+
+clear c1 c2 c3 c4
+
+    
+dp = rawData{ idx }.jointAngleActual( 1:4, : ) - rawData{ idx }.pZFT;
+dv =   rawData{ idx }.jointVelActual( 1:4, : ) - rawData{ idx }.vZFT;
+
+c1_K = dp' * v1;
+c2_K = dp' * v2;
+c3_K = dp' * v3;
+c4_K = dp' * v4;
+
+c1_B = dv' * v1;
+c2_B = dv' * v2;
+c3_B = dv' * v3;
+c4_B = dv' * v4;
+
+
+norm( c1_K( idxS ), 2 )
+norm( c2_K( idxS ), 2 )
+norm( c3_K( idxS ), 2 )
+norm( c4_K( idxS ), 2 )
+
+
+f = figure( ); a = axes( 'parent', f );hold on;
+
+plot( rawData{idx}.currentTime( idxS ) - tStart, [c1_K( idxS ), c2_K( idxS ), c3_K( idxS ), c4_K( idxS ) ]' )
+% plot( rawData{idx}.currentTime, [c1_K, c2_K, c3_K, c4_K]' )
+% plot( rawData{idx}.currentTime, [c1_B, c2_B, c3_B, c4_B]' )
+legend( "$c_1$","$c_2$","$c_3$","$c_4$", 'fontsize', 30, 'location', 'northwest' );
+
+set( a,   'XLim',   [ 0, rawData{idx}.currentTime( idxEnd ) - tStart ], 'fontsize', 28 )
+set( a,   'YLim',   [ -1, 1]                                          , 'fontsize', 28 )
+
+xlabel( 'Time [sec]'      , 'fontsize', 34 ); 
+ylabel( 'Contribution [-]', 'fontsize', 34 );
