@@ -46,7 +46,7 @@ mySaveFig( gcf, 'HiJosh' )
 %% (2a) Parsing the txt File 
 
 % For the animation, you need to have the 'data_log.txt' file.
-rawData = myTxtParse( 'data_log.txt' );
+rawData = myTxtParse( 'data_log_T3.txt' );
 
 %% (2b) Running the 3D Animation
 
@@ -55,16 +55,13 @@ nodeN = size(rawData.geomXYZPositions, 1) / 3 ;                            % Num
 N     = length( rawData.currentTime );
 
 genNodes = @(x) ( "node" + (1:x) );
-
-% Setting the name for the markers
-nodeN = 25;     % Number of nodes of the whip.
-stringList = [ "NAMETHEGEOM1", "NAMETHEGEOM2", "NAMETHEGEOM3", "NAMETHEGEOM4",  genNodes( nodeN ) ];
+stringList = [ "Target", "SH", "EL", "EE",  genNodes( 25 ) ];              % 25 Nodes for the whip
 
 % Setting the size of each markers
-sizeList   = [    16,      16,            16, 8 * ones( 1, nodeN ) ];
+sizeList   = [ 16, 16, 16, 16, 8 * ones( 1, 25 ) ];
 
 % Setting the color of each markers
-colorList  = [      repmat( c.pink, 3, 1); repmat( c.grey, nodeN , 1 ) ];
+colorList  = [    c.green; repmat( c.green, 3, 1); repmat( c.grey, 25 , 1 ) ];
 
 for i = 1: length( sizeList )
     markers( i ) = myMarker( rawData.geomXYZPositions( 3 * i - 2, : ), ... 
@@ -76,18 +73,60 @@ for i = 1: length( sizeList )
 end
 
 ani = my3DAnimation( tStep, markers );
-ani.connectMarkers( 1, ["NAMETHEGEOM1",  "NAMETHEGEOM2", "NAMETHEGEOM3"], 'linecolor', c.grey )        
+ani.connectMarkers( 1, [ "SH", "EL", "EE" ], 'linecolor', c.grey )        
                                                                            % Connecting the markers with a line.
 
-tmpLim = 2.0;
+tmpLim = 2.5;
 set( ani.hAxes{1},   'XLim',   [ -tmpLim , tmpLim ] , ...                  
                      'YLim',   [ -tmpLim , tmpLim ] , ...    
                      'ZLim',   [ -tmpLim , tmpLim ] , ...
                      'view',   [44.9986   12.8650 ]     )                  % Set the view, xlim, ylim and zlim of the animation
                                                                            % ani.hAxes{1} is the axes handle for the main animation
+% Add side plots
+% For the Angular Position along time
+tmp1 = my2DLine( rawData.currentTime, rawData.jointAngleActual( 1, : ), 'linecolor', c.pink,   'linestyle', '-', 'linewidth', 6 );
+tmp2 = my2DLine( rawData.currentTime, rawData.jointAngleActual( 2, : ), 'linecolor', c.green,  'linestyle', '-', 'linewidth', 6 );
+tmp3 = my2DLine( rawData.currentTime, rawData.jointAngleActual( 3, : ), 'linecolor', c.blue,   'linestyle', '-', 'linewidth', 6 );
+tmp4 = my2DLine( rawData.currentTime, rawData.jointAngleActual( 4, : ), 'linecolor', c.yellow, 'linestyle', '-', 'linewidth', 6 );
 
+ani.addTrackingPlots( 2, tmp1 );      
+ani.addTrackingPlots( 2, tmp2 );      
+ani.addTrackingPlots( 2, tmp3 );      
+ani.addTrackingPlots( 2, tmp4 );      
 
-willSave = false;           % Set this as 'true' if you want to save the video
+plot( rawData.currentTime, rawData.pZFT( 1, : ), 'parent', ani.hAxes{ 2 }, 'color', c.pink,   'linestyle', "--", 'linewidth', 3 );
+plot( rawData.currentTime, rawData.pZFT( 2, : ), 'parent', ani.hAxes{ 2 }, 'color', c.green,  'linestyle', "--", 'linewidth', 3 );
+plot( rawData.currentTime, rawData.pZFT( 3, : ), 'parent', ani.hAxes{ 2 }, 'color', c.blue,   'linestyle', "--", 'linewidth', 3 );
+plot( rawData.currentTime, rawData.pZFT( 4, : ), 'parent', ani.hAxes{ 2 }, 'color', c.yellow, 'linestyle', "--", 'linewidth', 3 );
+     
+tmp1 = my2DLine( rawData.currentTime, rawData.jointVelActual( 1, : ), 'linecolor', c.pink,   'linestyle', '-', 'linewidth', 6 );
+tmp2 = my2DLine( rawData.currentTime, rawData.jointVelActual( 2, : ), 'linecolor', c.green,  'linestyle', '-', 'linewidth', 6 );
+tmp3 = my2DLine( rawData.currentTime, rawData.jointVelActual( 3, : ), 'linecolor', c.blue,   'linestyle', '-', 'linewidth', 6 );
+tmp4 = my2DLine( rawData.currentTime, rawData.jointVelActual( 4, : ), 'linecolor', c.yellow, 'linestyle', '-', 'linewidth', 6 );
+
+ani.addTrackingPlots( 3, tmp1 );      
+ani.addTrackingPlots( 3, tmp2 );      
+ani.addTrackingPlots( 3, tmp3 );      
+ani.addTrackingPlots( 3, tmp4 );      
+
+plot( rawData.currentTime, rawData.vZFT( 1, : ), 'parent', ani.hAxes{ 3 }, 'color', c.pink,   'linestyle', "--", 'linewidth', 3 );
+plot( rawData.currentTime, rawData.vZFT( 2, : ), 'parent', ani.hAxes{ 3 }, 'color', c.green,  'linestyle', "--", 'linewidth', 3 );
+plot( rawData.currentTime, rawData.vZFT( 3, : ), 'parent', ani.hAxes{ 3 }, 'color', c.blue,   'linestyle', "--", 'linewidth', 3 );
+plot( rawData.currentTime, rawData.vZFT( 4, : ), 'parent', ani.hAxes{ 3 }, 'color', c.yellow, 'linestyle', "--", 'linewidth', 3 );
+     
+set( ani.hAxes{ 2 }, 'xlim', [0, 1.5 ], ...
+                     'ylim', [-2, 4] );
+                 
+set( ani.hAxes{ 3 }, 'xlim', [0, 1.5 ], ...
+                     'ylim', [-5, 10] );                 
+   
+h = fill( [0.3, 1.25, 1.25, 0.3],[-2, -2, 4, 4], c.grey, 'parent', ani.hAxes{ 2 } );
+h.FaceAlpha=0.4; h.EdgeAlpha=0;                 
+
+h = fill( [0.3, 1.25, 1.25, 0.3],[-5, -5, 10, 10], c.grey, 'parent', ani.hAxes{ 3 } );
+h.FaceAlpha=0.4; h.EdgeAlpha=0;             
+
+willSave = true;           % Set this as 'true' if you want to save the video
 ani.run( 0.2, willSave, 'output' ) 
 
 %% (3-) Plot for the time vs. velocity
