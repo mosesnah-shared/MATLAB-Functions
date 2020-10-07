@@ -37,7 +37,7 @@ classdef my3DAnimation < handle
                                            % [Configuration #2] A big plot on the left, two plots on the upper/lower right.
         pos2   = [0.08 0.08 0.42 0.82; ... %   Position/size for the main plot - 3D real time plot
                   0.58 0.08 0.40 0.37; ... %   Position/size for the under-sub-plot, drawn in the lower section
-                  0.58 0.55 0.40 0.40]     % Position/size for the above-sub-plot, drawn in the upper section.
+                  0.58 0.55 0.40 0.40]     %   Position/size for the above-sub-plot, drawn in the upper section.
 
     end
     
@@ -74,19 +74,22 @@ classdef my3DAnimation < handle
         hAxes     = {     gobjects(0),     gobjects(0),       gobjects(0) };
           
           
-        hMarkers  = {     gobjects(0),     gobjects(0),       gobjects(0) };
-        markers   = {  myMarker.empty,  myMarker.empty,    myMarker.empty };        
+        hMarkers   = {     gobjects(0),     gobjects(0),       gobjects(0) };
+        markers    = {  myMarker.empty,  myMarker.empty,    myMarker.empty };        
 
-        hLines    = {     gobjects(0),     gobjects(0),       gobjects(0) };
-        lines     = {    myLine.empty,    myLine.empty,      myLine.empty };                
+        hLines     = {     gobjects(0),     gobjects(0),       gobjects(0) };
+        lines      = {    myLine.empty,    myLine.empty,      myLine.empty };                                     
         
-        hEllipses = {     gobjects(0),     gobjects(0),       gobjects(0) };
-        ellipses  = { myEllipse.empty, myEllipse.empty,  myEllipse.empty  };
+        hpLines    = {     gobjects(0),     gobjects(0),       gobjects(0) }; % Lines for "Plots", which are static.
+        pLines     = {  my2DLine.empty,  my2DLine.empty,    my2DLine.empty }; % Lines for "Plots", which are static.         
         
-        hArrows   = {     gobjects(0),     gobjects(0),       gobjects(0) };
-        arrows    = {   myArrow.empty,   myArrow.empty,    myArrow.empty  };
+        hEllipses  = {     gobjects(0),     gobjects(0),       gobjects(0) };
+        ellipses   = { myEllipse.empty, myEllipse.empty,  myEllipse.empty  };
         
-        isZoomed  = [           false,          false,               false]; % Check whether the plot is a zoomed-plot or not
+        hArrows    = {     gobjects(0),     gobjects(0),       gobjects(0) };
+        arrows     = {   myArrow.empty,   myArrow.empty,    myArrow.empty  };
+        
+        isZoomed   = [           false,          false,               false]; % Check whether the plot is a zoomed-plot or not
         zoomIdx; zoomSize;
     end
     
@@ -140,14 +143,14 @@ classdef my3DAnimation < handle
                 set( obj.hAxes{ 1 }, 'Position', obj.pos2( 1,: ) ); 
                 
                 obj.hAxes{ 2 } = subplot( 'Position', obj.pos2( 2, : ), 'parent', obj.hFigure );
-                hold( obj.hAxes{ 2 },    'on' );  axis( obj.hAxes{ 2 }, 'equal' ); 
+                hold( obj.hAxes{ 2 },    'on' );  %axis( obj.hAxes{ 2 }, 'equal' ); 
             end   
             
             if  ( idx == 3 ) && ( isempty( obj.hAxes{ 3 } ) )
                 set( obj.hAxes{ 1 }, 'Position', obj.pos2( 1,: ) ); 
                 
                 obj.hAxes{ 3 } = subplot( 'Position', obj.pos2( 3, : ), 'parent', obj.hFigure );
-                hold( obj.hAxes{ 3 },    'on' );  axis( obj.hAxes{ 3 }, 'equal' ); 
+                hold( obj.hAxes{ 3 },    'on' );  %axis( obj.hAxes{ 3 }, 'equal' ); 
             end   
             
             
@@ -223,8 +226,22 @@ classdef my3DAnimation < handle
                         obj.hLines{ idx }( end + 1 ) = line;
                          obj.lines{ idx }( end + 1 ) = g; 
                  end    
-            end
+
+            elseif isa( myGraphics, 'my2DLine' )
                 
+                 for g = myGraphics                      
+
+                    line = plot( g.x, g.y, 'parent', h2Draw, ...
+                                   'lineWidth', g.lineWidth, ...
+                                       'color', g.lineColor, ...                           
+                                   'lineStyle', g.lineStyle );
+ 
+                        obj.hpLines{ idx }( end + 1 ) = line;
+                         obj.pLines{ idx }( end + 1 ) = g; 
+                 end                     
+                 
+            end
+            
         end
         
         function connectMarkers( obj, idx, whichMarkers, varargin )
@@ -423,6 +440,23 @@ classdef my3DAnimation < handle
             end
            obj.simStep = obj.simStep + step;                               % Increment the simulation step for plot.
            
+        end
+        
+        function addTrackingPlots( obj, idx, plotLine )
+            %addZoomWindow: Add a Zoom-in view plot of the main axes plot
+            % [INPUTS]            
+            %   (1) idx [integer]
+            %       -  2 (Lower-right), 3 (Upper-right)            
+            %   (2) tdata, ydata [float array]
+            %       -  The data array for the tracker `
+            obj.adjustFigures( idx )                     
+            obj.addGraphicObject( idx, plotLine )
+
+            % Add the tracking markers. 
+            tmp = myMarker( plotLine.x, plotLine.y, zeros( 1, length( plotLine.x ) ), ...
+                                                   'markersize', 4 * plotLine.lineWidth , ...
+                                                  'markercolor', plotLine.lineColor );
+            obj.addGraphicObject( idx, tmp );
         end
         
         function addZoomWindow( obj, idx, whichMarker, size )
