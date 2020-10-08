@@ -129,6 +129,41 @@ h.FaceAlpha=0.4; h.EdgeAlpha=0;
 willSave = true;           % Set this as 'true' if you want to save the video
 ani.run( 0.2, willSave, 'output' ) 
 
+%% (2c) MSE Calculation.
+
+t_start = 0.3;
+t_end   = 0.3 + 0.5833;
+idx_list = find( (rawData.currentTime >= t_start) & (rawData.currentTime <= t_end) );
+
+for idx_J = 1:4
+
+
+if     idx_J == 1
+    tmpc = c.pink;
+    
+elseif idx_J == 2    
+    tmpc = c.green;
+    
+elseif idx_J == 3
+    tmpc = c.blue;
+    
+elseif idx_J == 4
+    tmpc = c.yellow;
+    
+end
+figure( )
+plot( rawData.currentTime( idx_list ), rawData.jointAngleActual( idx_J, idx_list ),  '-', 'linewidth', 5, 'color', tmpc )
+hold on
+plot( rawData.currentTime( idx_list ), rawData.pZFT( idx_J, idx_list ), '--', 'linewidth', 5, 'color', tmpc )
+set( gca, 'xlim', [t_start, t_end], 'ylim', [-2, 2.5]);
+
+tmp = 1/length( idx_list ) * sqrt( sum( ( rawData.pZFT( idx_J, idx_list ) - rawData.jointAngleActual( idx_J, idx_list ) ).^2 ) );
+tmp
+% plot( rawData.currentTime, rawData.jointAngleActual( 2, idx_list ), rawData.currentTime, rawData.pZFT( 2, idx_list ) )
+% plot( rawData.currentTime, rawData.jointAngleActual( 3, idx_list ), rawData.currentTime, rawData.pZFT( 3, idx_list ) )
+% plot( rawData.currentTime, rawData.jointAngleActual( 4, idx_list ), rawData.currentTime, rawData.pZFT( 4, idx_list ) )
+mySaveFig( gcf, ['J', num2str( idx_J )] );
+end
 %% (3-) Plot for the time vs. velocity
 %% (3a) Read the data_log.txt
 
