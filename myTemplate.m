@@ -46,7 +46,7 @@ mySaveFig( gcf, 'HiJosh' )
 %% (2a) Parsing the txt File 
 
 % For the animation, you need to have the 'data_log.txt' file.
-rawData = myTxtParse( 'data_log_T3.txt' );
+rawData = myTxtParse( 'data_log_T2.txt' );
 
 %% (2b) Running the 3D Animation
 
@@ -61,7 +61,7 @@ stringList = [ "Target", "SH", "EL", "EE",  genNodes( 25 ) ];              % 25 
 sizeList   = [ 16, 16, 16, 16, 8 * ones( 1, 25 ) ];
 
 % Setting the color of each markers
-colorList  = [    c.green; repmat( c.green, 3, 1); repmat( c.grey, 25 , 1 ) ];
+colorList  = [    c.blue; repmat( c.blue, 3, 1); repmat( c.grey, 25 , 1 ) ];
 
 for i = 1: length( sizeList )
     markers( i ) = myMarker( rawData.geomXYZPositions( 3 * i - 2, : ), ... 
@@ -82,49 +82,79 @@ set( ani.hAxes{1},   'XLim',   [ -tmpLim , tmpLim ] , ...
                      'ZLim',   [ -tmpLim , tmpLim ] , ...
                      'view',   [44.9986   12.8650 ]     )                  % Set the view, xlim, ylim and zlim of the animation
                                                                            % ani.hAxes{1} is the axes handle for the main animation
+                                                                           
+% Calculating curvature (kappa) of the movement. 
+qacc  = rawData.jointAccActual(1:4,:);
+qvel  = rawData.jointVelActual(1:4,:);
+
+ttmp = qacc - qvel ./ sum( qvel.^2 ).* sum( qvel.*qacc );
+
+kappa = ( 1./sum( qvel.^2 ) ) .* sqrt( sum( ttmp.^2 ) ) ;
+                                         
+tmp1 = my2DLine( rawData.currentTime, kappa, 'linecolor', c.blue, 'linestyle', '-', 'linewidth', 6 );
+ani.addTrackingPlots( 2, tmp1 ); 
+
+set( ani.hAxes{ 2 }, 'xlim', [0.1, 2.5 ], 'ylim', [0, 300] );
+h = fill( [0.1, 0.6833, 0.6833, 0.1],[0, 0, 300, 300], c.grey, 'parent', ani.hAxes{ 2 } );
+h.FaceAlpha=0.4; h.EdgeAlpha=0;      
+
+
+tmp1 = my2DLine( rawData.currentTime, kappa, 'linecolor', c.blue, 'linestyle', '-', 'linewidth', 6 );
+ani.addTrackingPlots( 3, tmp1 ); 
+set( ani.hAxes{ 3 }, 'xlim', [0.1, 0.6833 ], 'ylim', [0, 3] );
+h = fill( [0.1, 0.6833, 0.6833, 0.1],[0, 0, 3, 3], c.grey, 'parent', ani.hAxes{ 3 } );
+h.FaceAlpha=0.4; h.EdgeAlpha=0;     
+
+%                  
+% set( ani.hAxes{ 3 }, 'xlim', [0, 1.5 ], ...
+%                      'ylim', [-5, 10] );                 
+%    
+% h = fill( [0.3, 1.25, 1.25, 0.3],[-2, -2, 4, 4], c.grey, 'parent', ani.hAxes{ 2 } );
+% h.FaceAlpha=0.4; h.EdgeAlpha=0;      
+
 % Add side plots
 % For the Angular Position along time
-tmp1 = my2DLine( rawData.currentTime, rawData.jointAngleActual( 1, : ), 'linecolor', c.pink,   'linestyle', '-', 'linewidth', 6 );
-tmp2 = my2DLine( rawData.currentTime, rawData.jointAngleActual( 2, : ), 'linecolor', c.green,  'linestyle', '-', 'linewidth', 6 );
-tmp3 = my2DLine( rawData.currentTime, rawData.jointAngleActual( 3, : ), 'linecolor', c.blue,   'linestyle', '-', 'linewidth', 6 );
-tmp4 = my2DLine( rawData.currentTime, rawData.jointAngleActual( 4, : ), 'linecolor', c.yellow, 'linestyle', '-', 'linewidth', 6 );
+% tmp1 = my2DLine( rawData.currentTime, rawData.jointAngleActual( 1, : ), 'linecolor', c.pink,   'linestyle', '-', 'linewidth', 6 );
+% tmp2 = my2DLine( rawData.currentTime, rawData.jointAngleActual( 2, : ), 'linecolor', c.green,  'linestyle', '-', 'linewidth', 6 );
+% tmp3 = my2DLine( rawData.currentTime, rawData.jointAngleActual( 3, : ), 'linecolor', c.blue,   'linestyle', '-', 'linewidth', 6 );
+% tmp4 = my2DLine( rawData.currentTime, rawData.jointAngleActual( 4, : ), 'linecolor', c.yellow, 'linestyle', '-', 'linewidth', 6 );
 
-ani.addTrackingPlots( 2, tmp1 );      
-ani.addTrackingPlots( 2, tmp2 );      
-ani.addTrackingPlots( 2, tmp3 );      
-ani.addTrackingPlots( 2, tmp4 );      
-
-plot( rawData.currentTime, rawData.pZFT( 1, : ), 'parent', ani.hAxes{ 2 }, 'color', c.pink,   'linestyle', "--", 'linewidth', 3 );
-plot( rawData.currentTime, rawData.pZFT( 2, : ), 'parent', ani.hAxes{ 2 }, 'color', c.green,  'linestyle', "--", 'linewidth', 3 );
-plot( rawData.currentTime, rawData.pZFT( 3, : ), 'parent', ani.hAxes{ 2 }, 'color', c.blue,   'linestyle', "--", 'linewidth', 3 );
-plot( rawData.currentTime, rawData.pZFT( 4, : ), 'parent', ani.hAxes{ 2 }, 'color', c.yellow, 'linestyle', "--", 'linewidth', 3 );
-     
-tmp1 = my2DLine( rawData.currentTime, rawData.jointVelActual( 1, : ), 'linecolor', c.pink,   'linestyle', '-', 'linewidth', 6 );
-tmp2 = my2DLine( rawData.currentTime, rawData.jointVelActual( 2, : ), 'linecolor', c.green,  'linestyle', '-', 'linewidth', 6 );
-tmp3 = my2DLine( rawData.currentTime, rawData.jointVelActual( 3, : ), 'linecolor', c.blue,   'linestyle', '-', 'linewidth', 6 );
-tmp4 = my2DLine( rawData.currentTime, rawData.jointVelActual( 4, : ), 'linecolor', c.yellow, 'linestyle', '-', 'linewidth', 6 );
-
-ani.addTrackingPlots( 3, tmp1 );      
-ani.addTrackingPlots( 3, tmp2 );      
-ani.addTrackingPlots( 3, tmp3 );      
-ani.addTrackingPlots( 3, tmp4 );      
-
-plot( rawData.currentTime, rawData.vZFT( 1, : ), 'parent', ani.hAxes{ 3 }, 'color', c.pink,   'linestyle', "--", 'linewidth', 3 );
-plot( rawData.currentTime, rawData.vZFT( 2, : ), 'parent', ani.hAxes{ 3 }, 'color', c.green,  'linestyle', "--", 'linewidth', 3 );
-plot( rawData.currentTime, rawData.vZFT( 3, : ), 'parent', ani.hAxes{ 3 }, 'color', c.blue,   'linestyle', "--", 'linewidth', 3 );
-plot( rawData.currentTime, rawData.vZFT( 4, : ), 'parent', ani.hAxes{ 3 }, 'color', c.yellow, 'linestyle', "--", 'linewidth', 3 );
-     
-set( ani.hAxes{ 2 }, 'xlim', [0, 1.5 ], ...
-                     'ylim', [-2, 4] );
-                 
-set( ani.hAxes{ 3 }, 'xlim', [0, 1.5 ], ...
-                     'ylim', [-5, 10] );                 
-   
-h = fill( [0.3, 1.25, 1.25, 0.3],[-2, -2, 4, 4], c.grey, 'parent', ani.hAxes{ 2 } );
-h.FaceAlpha=0.4; h.EdgeAlpha=0;                 
-
-h = fill( [0.3, 1.25, 1.25, 0.3],[-5, -5, 10, 10], c.grey, 'parent', ani.hAxes{ 3 } );
-h.FaceAlpha=0.4; h.EdgeAlpha=0;             
+% ani.addTrackingPlots( 2, tmp1 );      
+% ani.addTrackingPlots( 2, tmp2 );      
+% ani.addTrackingPlots( 2, tmp3 );      
+% ani.addTrackingPlots( 2, tmp4 );      
+% 
+% plot( rawData.currentTime, rawData.pZFT( 1, : ), 'parent', ani.hAxes{ 2 }, 'color', c.pink,   'linestyle', "--", 'linewidth', 3 );
+% plot( rawData.currentTime, rawData.pZFT( 2, : ), 'parent', ani.hAxes{ 2 }, 'color', c.green,  'linestyle', "--", 'linewidth', 3 );
+% plot( rawData.currentTime, rawData.pZFT( 3, : ), 'parent', ani.hAxes{ 2 }, 'color', c.blue,   'linestyle', "--", 'linewidth', 3 );
+% plot( rawData.currentTime, rawData.pZFT( 4, : ), 'parent', ani.hAxes{ 2 }, 'color', c.yellow, 'linestyle', "--", 'linewidth', 3 );
+%      
+% tmp1 = my2DLine( rawData.currentTime, rawData.jointVelActual( 1, : ), 'linecolor', c.pink,   'linestyle', '-', 'linewidth', 6 );
+% tmp2 = my2DLine( rawData.currentTime, rawData.jointVelActual( 2, : ), 'linecolor', c.green,  'linestyle', '-', 'linewidth', 6 );
+% tmp3 = my2DLine( rawData.currentTime, rawData.jointVelActual( 3, : ), 'linecolor', c.blue,   'linestyle', '-', 'linewidth', 6 );
+% tmp4 = my2DLine( rawData.currentTime, rawData.jointVelActual( 4, : ), 'linecolor', c.yellow, 'linestyle', '-', 'linewidth', 6 );
+% 
+% ani.addTrackingPlots( 3, tmp1 );      
+% ani.addTrackingPlots( 3, tmp2 );      
+% ani.addTrackingPlots( 3, tmp3 );      
+% ani.addTrackingPlots( 3, tmp4 );      
+% 
+% plot( rawData.currentTime, rawData.vZFT( 1, : ), 'parent', ani.hAxes{ 3 }, 'color', c.pink,   'linestyle', "--", 'linewidth', 3 );
+% plot( rawData.currentTime, rawData.vZFT( 2, : ), 'parent', ani.hAxes{ 3 }, 'color', c.green,  'linestyle', "--", 'linewidth', 3 );
+% plot( rawData.currentTime, rawData.vZFT( 3, : ), 'parent', ani.hAxes{ 3 }, 'color', c.blue,   'linestyle', "--", 'linewidth', 3 );
+% plot( rawData.currentTime, rawData.vZFT( 4, : ), 'parent', ani.hAxes{ 3 }, 'color', c.yellow, 'linestyle', "--", 'linewidth', 3 );
+%      
+% set( ani.hAxes{ 2 }, 'xlim', [0, 1.5 ], ...
+%                      'ylim', [-2, 4] );
+%                  
+% set( ani.hAxes{ 3 }, 'xlim', [0, 1.5 ], ...
+%                      'ylim', [-5, 10] );                 
+%    
+% h = fill( [0.3, 1.25, 1.25, 0.3],[-2, -2, 4, 4], c.grey, 'parent', ani.hAxes{ 2 } );
+% h.FaceAlpha=0.4; h.EdgeAlpha=0;                 
+% 
+% h = fill( [0.3, 1.25, 1.25, 0.3],[-5, -5, 10, 10], c.grey, 'parent', ani.hAxes{ 3 } );
+% h.FaceAlpha=0.4; h.EdgeAlpha=0;             
 
 willSave = true;           % Set this as 'true' if you want to save the video
 ani.run( 0.2, willSave, 'output' ) 
