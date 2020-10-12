@@ -76,6 +76,10 @@ T34 = [R34, p34; 0,0,0,1];
 T04 = T01 * T12 * T23 * T34;                     % the whole transformation
                                                  % T04 transforms from frame 0 to 4
 
+pUPCOM  = T01 * T12 * T23 * [0;0;-Lc1;1];
+pLOWCOM = T04 * [0;0;-Lc2; 1]; 
+
+% END EFFECTOR
 pEE = T04 * [0;0;-L2; 1];                        % End-point (effector) position vector, multiplying the position of EE w.r.t Frame 4
 x  = [ pEE(1), pEE(2), pEE(3) ];                 % End-point (effector) position vector   
 dx = diff( x, t );                               % Time differentiation of dx
@@ -87,6 +91,38 @@ dJEE = diff( JEE, t) ;                           % Getting the time-derivative o
 
 dJEE = subs( dJEE, diff( q,t ), dq );
 dJEE = simplify( dJEE );
+
+% UPPER LIMB COM
+x  = [ pUPCOM(1), pUPCOM(2), pUPCOM(3) ];                 % End-point (effector) position vector   
+dx = diff( x, t );                               % Time differentiation of dx
+dx = subs( dx, diff( q,t ), dq );                % Substituting all diff( q,t ) to dq's
+
+J_UPCOM  = myJacobian(dx, dq);                       % Getting the jacobian of the end-effector
+
+dJ_UPCOM = diff( J_UPCOM, t) ;                           % Getting the time-derivative of jacobian of the end-effector
+
+dJ_UPCOM = subs( dJ_UPCOM, diff( q,t ), dq );
+dJ_UPCOM = simplify( dJ_UPCOM );
+
+% LOWER LIMB COM
+x  = [ pLOWCOM(1), pLOWCOM(2), pLOWCOM(3) ];                 % End-point (effector) position vector   
+dx = diff( x, t );                               % Time differentiation of dx
+dx = subs( dx, diff( q,t ), dq );                % Substituting all diff( q,t ) to dq's
+
+J_LOWCOM  = myJacobian(dx, dq);                       % Getting the jacobian of the end-effector
+
+dJ_LOWCOM = diff( J_LOWCOM, t) ;                           % Getting the time-derivative of jacobian of the end-effector
+
+dJ_LOWCOM = subs( dJ_LOWCOM, diff( q,t ), dq );
+dJ_LOWCOM = simplify( dJ_LOWCOM );
+
+% For the Jacobian
+syms q1 q2 q3 q4
+JEE_CV      = subs( JEE, q, [q1,q2,q3,q4] );
+J_LOWCOM_CV = subs( J_LOWCOM, q, [q1,q2,q3,q4] );
+J_UPCOM_CV  = subs( J_UPCOM,  q, [q1,q2,q3,q4] );
+
+%% 
 
 % [FOR CONTROLLER]
 % changing the equation for cpp file
