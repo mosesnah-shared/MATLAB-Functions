@@ -15,9 +15,9 @@ function r = myParser( arguments )
     p = inputParser( );
 
     ckc1 = @( x ) ( isnumeric( x ) && x > 0      ) && ( length( x ) == 1 );                 % Size 
-    ckc2 = @( x ) ( isstring( x ) || ischar( x ) ) && ( length( x ) == 1 );                 % Style
+    ckc2 = @( x ) ( isstring( x ) || ischar( x ) );                                         % Style
     ckc3 = @( x ) ( isnumeric( x ) &&  all( x >= 0 & x <= 1 ) && ( length( x ) == 3 ) );    % Color
-    ckc4 = @( x ) ( isstring( x ) );                                                        % Name Check
+    ckc4 = @( x ) ( isstring( x ) ) || ( ischar( x ) );                                     % Name Check
     ckc5 = @( x ) ( isnumeric( x ) && x >= 0 && x <= 1 );                                   % Color alpha
     
     
