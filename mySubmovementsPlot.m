@@ -26,24 +26,14 @@
 
 %% (--) INITIALIZATION
 
-clear all; close all; clc;
-workspace;
-                                                                           
-tmpDir = "/Users/mosesnah/MATLAB-Drive";                                   % Adding the directory for the Functions which is all saved in MATLAB Drive 
-addpath( tmpDir );
-tmpList = dir( fullfile( tmpDir , '*.m' ) );                               % Getting all the .m file functions we are importing.
+clear all; close all; clc; workspace;
+cd( fileparts( matlab.desktop.editor.getActiveFilename ) );                % Setting the current directory as the folder where this "main.m" script is located
 
-for tmp = { tmpList.name }
-    fprintf('IMPORTED FUNCTION [ %-25s ] \n', tmp{ 1 } );
-end
-
-
-cd( fileparts(  matlab.desktop.editor.getActiveFilename ) );               % Setting the current directory as the folder where this "main.m" script is located
-
-                                                                           % [Default Settings]
-fontSize = 10; lineWidth = 5; markerSize = 25;                             % The default sizes of the plot
-mySetFigureConfig( fontSize, 2 * lineWidth, markerSize );                  % Setting the default configuration of the figure.
-c     = myColor();                                                         % Getting my Color, a list of colors for the plot.
+myFigureConfig(  'fontsize',  20, ...
+                'lineWidth',   5, ...
+               'markerSize',  25 );         
+              
+c  = myColor();                
 
 clear tmp*
 
@@ -51,33 +41,33 @@ clear tmp*
 %% (1A) Plotting Submovements
 %% --- (1A - a) Time vs Position/Velocity, a Single Submovements
 
-tStep = 0.001;
-D     = 0.8; 
-N     = D / tStep;
+dt = 0.001;
 
-tVec  = tStep * [ 0: N ];
-vVec  = (30 * ( tVec/D ).^2 - 60 * ( tVec/D ).^3 + 30 * ( tVec/D ).^4);
-pVec  = 0.1 + 0.8 * (10 * ( tVec/D ).^3 - 15 * ( tVec/D ).^4 + 6 * ( tVec/D ).^5 );
-pVec2 = 0.9 - 0.3 * (10 * ( tVec/D ).^3 - 15 * ( tVec/D ).^4 + 6 * ( tVec/D ).^5 );
+%                           pi   pf   D
+submov1 = mySubmovement( [ 0.1, 0.9, 0.8 ]  );
+submov2 = mySubmovement( [ 0.9, 0.6, 0.8 ]  );
 
-vVec  =   0.8 * (30 * ( tVec/D ).^2 - 60 * ( tVec/D ).^3 + 30 * ( tVec/D ).^4 );
-vVec2 = - 0.3 * (30 * ( tVec/D ).^2 - 60 * ( tVec/D ).^3 + 30 * ( tVec/D ).^4 );
+%                                              dt toff   T
+[ p_vec1, v_vec1, t_vec ] = submov1.data_arr(  dt,   0, 1.0 );
+[ p_vec2, v_vec2, t_vec ] = submov2.data_arr(  dt, 0.1, 1.0 );
 
 hFig = figure(); hAxes = axes('parent', hFig );
-plot( tVec, vVec, tVec, vVec2) 
+plot( t_vec, p_vec1, t_vec, p_vec2, 'linewidth', 7, 'color', c.blue, 'parent', hAxes );
 set(gca, 'visible', 'off')
 
 %% --- (1A - b) Time vs Position/Velocity, Multiple Submovements
 
 % toffSet = 0.6;
-toffSet = 0.9;
-D1 = 0.8; D2 = 0.6;
+toffSet = 0.6;
+D1 = 0.8; D2 = 0.5;
 v1SH = 0.7; v2SH = 0.3;
 v1EL = 0.8; v2EL = 0.4;
 
 tStep = 0.001;
 tWhole = max( D1, D2 + toffSet );
-vVec = zeros( 1, tWhole/tStep + 1 );
+vVec  = zeros( 1, int32( tWhole/tStep + 1 ) );
+vVec1 = zeros( 1, int32( tWhole/tStep + 1 ) );
+vVec2 = zeros( 1, int32( tWhole/tStep + 1 ) );
 
 for i = 1:2
     
@@ -86,6 +76,7 @@ for i = 1:2
         tmp1 = 0.7 * (30 * ( tmpt1Vec/D1 ).^2 - 60 * ( tmpt1Vec/D1 ).^3 + 30 * ( tmpt1Vec/D1 ).^4);
         for j = 1:length( tmp1 )
             vVec(j) = tmp1(j);
+            vVec1(j) = tmp1(j);
         end
     else
         tmpt2Vec = 0 : tStep : D2;
@@ -94,37 +85,30 @@ for i = 1:2
         idxOffset = toffSet/tStep;
         for j = 1:length( tmp2 )
             vVec(j + idxOffset) = vVec(j+idxOffset) + tmp2(j);
+            vVec2( idxOffset + j )  =tmp2(j);
         end
     end
     
 end
 
+tVec = 0:tStep:tWhole;
+
 f = figure(); a = axes('parent', f);
 
-p1 = plot(0:tStep:tWhole, vVec);
-hold on
-% p1.Color(4)=0.2;
-area( 0:tStep:tWhole, vVec, 'FaceColor', p1.Color, 'FaceAlpha', 0.4, 'EdgeAlpha', 0 );
+pVec = cumsum( vVec * tStep );
+pVec1 = cumsum( vVec1 * tStep );
+pVec2 = cumsum( vVec2 * tStep );
 
+p1 = plot( tVec, vVec1, 'linestyle', '--', 'color', c.blue);
+hold on
+p2 = plot( tVec, vVec2, 'linestyle', '--', 'color', c.orange );
+p  = plot( tVec, vVec, 'color', c.yellow, 'linewidth', 10  );
+% area( tVec, vVec, 'FaceColor', p.Color, 'FaceAlpha', 0.4, 'EdgeAlpha', 0 );
+% area( tVec, vVec1, 'FaceColor', p1.Color, 'FaceAlpha', 0.4, 'EdgeAlpha', 0 );
+% area( tVec, vVec2, 'FaceColor', p2.Color, 'FaceAlpha', 0.4, 'EdgeAlpha', 0 );
 box off
 set(a, 'visible','off')
-p2 = plot(tmpt1Vec, tmp1, '--', 'linewidth', 8);
-p2.Color(4)=0.2;
-% area( tmpt1Vec, tmp1, 'FaceColor', p2.Color, 'FaceAlpha', 0.4, 'EdgeAlpha', 0 );
-p3 = plot(toffSet + tmpt2Vec, tmp2, '--' ,'linewidth', 8);
-p3.Color(4)=0.2;
-% area( toffSet + tmpt2Vec, tmp2, 'FaceColor', p3.Color, 'FaceAlpha', 0.4, 'EdgeAlpha', 0 );
 
-
-f1 = figure(); a1 = axes('parent', f1);
-
-% pVec = cumsum( vVec * tStep );
-% p1 = plot(0:tStep:tWhole, pVec);
-
-box off
-set(a1, 'visible','off')
-% p1.Color(4)=0.2;
-% area( 0:tStep:tWhole, pVec, 'FaceColor', p1.Color, 'FaceAlpha', 0.4, 'EdgeAlpha', 0 );
 
 %% --- (1A - c) Joint Coordinate Plot
 
@@ -175,3 +159,4 @@ set( p4, 'XTick', [], 'YTick', [] );
 set( p1, 'Xlim', [0,1], 'Ylim', [0,2] )
 set( p3, 'Xlim', [0,1], 'Ylim', [0,1] )
 set( p4, 'Xlim', [0,2], 'Ylim', [0,1] )
+

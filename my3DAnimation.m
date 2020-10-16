@@ -150,7 +150,7 @@ classdef my3DAnimation < handle
                 set( obj.hAxes{ 1 }, 'Position', obj.pos2( 1,: ) ); 
                 
                 obj.hAxes{ 3 } = subplot( 'Position', obj.pos2( 3, : ), 'parent', obj.hFigure );
-                hold( obj.hAxes{ 3 },    'on' );  %axis( obj.hAxes{ 3 }, 'equal' ); 
+                hold( obj.hAxes{ 3 },    'on' );  axis( obj.hAxes{ 3 }, 'equal' ); 
             end   
             
             
@@ -202,11 +202,13 @@ classdef my3DAnimation < handle
                 for g = myGraphics                      
 
                     % If size is correct, add the markers to the plot
-                        marker = plot3( g.xdata( 1 ), g.ydata( 1 ), g.zdata( 1 ), ...
-                                                                'parent', h2Draw, ...
-                                                        'Marker',  g.markerStyle, ...
-                                                    'MarkerSize',  g.markerSize,  ...
-                                               'MarkerEdgeColor',  g.markerColor, ...
+                        marker = scatter3( g.xdata( 1 ), g.ydata( 1 ), g.zdata( 1 ), g.markerSize * 8 , ...
+                                                                'parent', h2Draw,  ...
+                                                        'Marker',  g.markerStyle,  ...
+                                                     'LineWidth',  g.markerSize/3, ...   
+                                               'MarkerEdgeColor',  g.markerColor,  ...
+                                               'MarkerEdgeAlpha',  g.markerAlpha,  ...
+                                               'MarkerFaceAlpha',  g.markerAlpha,  ...
                                                'MarkerFaceColor',  [1,1,1]  ); 
 
                         obj.hMarkers{ idx }( end + 1 ) = marker;
@@ -356,13 +358,11 @@ classdef my3DAnimation < handle
 
         end
         
-        function step( obj, step )
-            %run: running a single step of the simulation
-
-            % Update Title
-            set( obj.hTitle,'String', sprintf( '[Time] %5.3f (s)  x%2.1f', obj.tVec( obj.simStep ), obj.vidRate ) );            
-            
-            % Update Markers
+        function goto( obj, idx )
+            % Go to the step of the following idx. 
+            set( obj.hTitle,'String', sprintf( '[Time] %5.3f (s)  x%2.1f', obj.tVec( idx ),  obj.vidRate  ) )
+        
+                  % Update Markers
             for i = 1 : length( obj.hMarkers )
                
                 if isempty( obj.hMarkers{ i } )
@@ -371,9 +371,9 @@ classdef my3DAnimation < handle
                 
                 for j = 1 : length( obj.hMarkers{ i } )
                     
-                    set( obj.hMarkers{ i }( j ), 'XData', obj.markers{ i }( j ).xdata( obj.simStep ), ...
-                                                 'YData', obj.markers{ i }( j ).ydata( obj.simStep ), ...
-                                                 'ZData', obj.markers{ i }( j ).zdata( obj.simStep )   )
+                    set( obj.hMarkers{ i }( j ), 'XData', obj.markers{ i }( j ).xdata( idx ), ...
+                                                 'YData', obj.markers{ i }( j ).ydata( idx ), ...
+                                                 'ZData', obj.markers{ i }( j ).zdata( idx )   )
                     
                 end
                  
@@ -387,9 +387,9 @@ classdef my3DAnimation < handle
                 end
                 
                 for j = 1 : length( obj.hEllipses{ i } )
-                    set( obj.hEllipses{ i }( j ), 'XData', obj.ellipses{ i }( j ).xmesh( :,:, obj.simStep ), ...
-                                                  'YData', obj.ellipses{ i }( j ).ymesh( :,:, obj.simStep ), ...
-                                                  'ZData', obj.ellipses{ i }( j ).zmesh( :,:, obj.simStep ) )
+                    set( obj.hEllipses{ i }( j ), 'XData', obj.ellipses{ i }( j ).xmesh( :, :, idx  ), ...
+                                                  'YData', obj.ellipses{ i }( j ).ymesh( :, :, idx  ), ...
+                                                  'ZData', obj.ellipses{ i }( j ).zmesh( :, :, idx  ) )
                     
                 end
                  
@@ -403,9 +403,9 @@ classdef my3DAnimation < handle
                 end
                 
                 for j = 1 : length( obj.hLines{ i } )
-                    set( obj.hLines{ i }( j ), 'XData', obj.lines{ i }( j ).x( :, obj.simStep ), ...
-                                               'YData', obj.lines{ i }( j ).y( :, obj.simStep ), ...
-                                               'ZData', obj.lines{ i }( j ).z( :, obj.simStep )  )
+                    set( obj.hLines{ i }( j ), 'XData', obj.lines{ i }( j ).x( :, idx ), ...
+                                               'YData', obj.lines{ i }( j ).y( :, idx ), ...
+                                               'ZData', obj.lines{ i }( j ).z( :, idx )  )
                     
                 end
                  
@@ -419,12 +419,12 @@ classdef my3DAnimation < handle
                 end
                 
                 for j = 1 : length( obj.hArrows{ i } )
-                    set( obj.hArrows{ i }( j ), 'XData', obj.arrows{ i }( j ).orig( 1, obj.simStep ), ...
-                                                'YData', obj.arrows{ i }( j ).orig( 2, obj.simStep ), ...
-                                                'ZData', obj.arrows{ i }( j ).orig( 3, obj.simStep ), ...
-                                                'UData', obj.arrows{ i }( j ).x( obj.simStep ), ...
-                                                'VData', obj.arrows{ i }( j ).y( obj.simStep ), ...
-                                                'WData', obj.arrows{ i }( j ).z( obj.simStep )   )
+                    set( obj.hArrows{ i }( j ), 'XData', obj.arrows{ i }( j ).orig( 1, idx ), ...
+                                                'YData', obj.arrows{ i }( j ).orig( 2, idx ), ...
+                                                'ZData', obj.arrows{ i }( j ).orig( 3, idx ), ...
+                                                'UData', obj.arrows{ i }( j ).x( idx ), ...
+                                                'VData', obj.arrows{ i }( j ).y( idx ), ...
+                                                'WData', obj.arrows{ i }( j ).z( idx )   )
                     
                 end
                  
@@ -432,13 +432,20 @@ classdef my3DAnimation < handle
             
             % Update the zoomed-in view's xlim, ylim and zlim
             
-            idx = find( obj.isZoomed );  % Find the index that should be changed. 
-            if idx ~= 0
-                set( obj.hAxes{ idx },  'XLim',   [ -obj.zoomSize + obj.markers{ idx }( obj.zoomIdx ).xdata( obj.simStep ), obj.zoomSize + obj.markers{ idx }( obj.zoomIdx ).xdata( obj.simStep ) ] , ...         
-                                        'YLim',   [ -obj.zoomSize + obj.markers{ idx }( obj.zoomIdx ).ydata( obj.simStep ), obj.zoomSize + obj.markers{ idx }( obj.zoomIdx ).ydata( obj.simStep ) ] , ...    
-                                        'ZLim',   [ -obj.zoomSize + obj.markers{ idx }( obj.zoomIdx ).zdata( obj.simStep ), obj.zoomSize + obj.markers{ idx }( obj.zoomIdx ).zdata( obj.simStep ) ] )  
+            iidx = find( obj.isZoomed );  % Find the index that should be changed. 
+            if iidx ~= 0
+                set( obj.hAxes{ iidx },  'XLim',  [ -obj.zoomSize + obj.markers{ iidx }( obj.zoomIdx ).xdata( idx ), obj.zoomSize + obj.markers{ iidx }( obj.zoomIdx ).xdata( idx ) ] , ...         
+                                        'YLim',   [ -obj.zoomSize + obj.markers{ iidx }( obj.zoomIdx ).ydata( idx ), obj.zoomSize + obj.markers{ iidx }( obj.zoomIdx ).ydata( idx ) ] , ...    
+                                        'ZLim',   [ -obj.zoomSize + obj.markers{ iidx }( obj.zoomIdx ).zdata( idx ), obj.zoomSize + obj.markers{ iidx }( obj.zoomIdx ).zdata( idx ) ] )  
             end
-           obj.simStep = obj.simStep + step;                               % Increment the simulation step for plot.
+           
+        end
+            
+            
+        function step( obj, step )
+            %run: running a single step of the simulation
+            obj.goto( obj.simStep )
+            obj.simStep = obj.simStep + step;                               % Increment the simulation step for plot.
            
         end
         
