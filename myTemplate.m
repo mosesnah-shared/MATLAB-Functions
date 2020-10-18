@@ -64,20 +64,22 @@ dt    = data.currentTime( 2 ) - data.currentTime( 1 );                     % Tim
 nodeN = size( data.geomXYZPositions, 1) / 3 ;                              % Number of markers of the simulation, dividing by 3 (x-y-z) gives us the number of geometry.
 
 mov_pars = [-2.06822,-0.27925,-0.27925, 2.40855, 0.01571, 0.     ,-0.83776, 1.5708 , 2.09963, 0.     , 0.80673, 0.03491, 1.21667, 0.63333, 0.6];
-p_i = mov_pars( 1:4  );
-p_m = mov_pars( 5:8  );
-p_f = mov_pars( 9:12 );
+pi = mov_pars( 1:4  );
+pm = mov_pars( 5:8  );
+pf = mov_pars( 9:12 );
 
 D1   = mov_pars( end - 2 );
 D2   = mov_pars( end - 1 );
 toff = mov_pars( end     );
 
+
+
+
+
 T = max( D1, D2 + toff );
 
 tVec  = ( 0:0.01:T );
 
-vVec1  =  ( p_m-p_i )' * (30 * ( tVec/D1 ).^2 - 60 * ( tVec/D1 ).^3 + 30 * ( tVec/D1 ).^4 );
-vVec2 =   ( p_f-p_m )' * (30 * ( tVec/D2 ).^2 - 60 * ( tVec/D2 ).^3 + 30 * ( tVec/D2 ).^4 );
 
 genNodes = @(x) ( "node" + (1:x) );
 stringList = [ "Target", "SH", "EL", "EE",  genNodes( nodeN - 4 ) ];       % 3 Upper limb markers + 1 target

@@ -32,7 +32,8 @@ cd( fileparts( matlab.desktop.editor.getActiveFilename ) );                % Set
 myFigureConfig(  'fontsize',  20, ...
                 'lineWidth',   5, ...
                'markerSize',  25 );         
-              
+           
+global c              
 c  = myColor();                
 
 clear tmp*
@@ -53,61 +54,39 @@ submov2 = mySubmovement( [ 0.9, 0.6, 0.8 ]  );
 
 hFig = figure(); hAxes = axes('parent', hFig );
 plot( t_vec, p_vec1, t_vec, p_vec2, 'linewidth', 7, 'color', c.blue, 'parent', hAxes );
+plot( t_vec, v_vec1, t_vec, v_vec2, 'linewidth', 7, 'color', c.blue, 'parent', hAxes );
 set(gca, 'visible', 'off')
 
 %% --- (1A - b) Time vs Position/Velocity, Multiple Submovements
 
-% toffSet = 0.6;
-toffSet = 0.6;
-D1 = 0.8; D2 = 0.5;
+dt   = 0.001;
+toff = 0.6;
+D1   = 0.8; D2 = 0.5;
+
 v1SH = 0.7; v2SH = 0.3;
 v1EL = 0.8; v2EL = 0.4;
 
-tStep = 0.001;
-tWhole = max( D1, D2 + toffSet );
-vVec  = zeros( 1, int32( tWhole/tStep + 1 ) );
-vVec1 = zeros( 1, int32( tWhole/tStep + 1 ) );
-vVec2 = zeros( 1, int32( tWhole/tStep + 1 ) );
+submov1 = mySubmovement( [ 0.0, v1SH, D1 ]  );
+submov2 = mySubmovement( [ 0.0, v2SH, D2 ]  );
+submov3 = mySubmovement( [ 0.0, v1EL, D2 ]  );
+submov4 = mySubmovement( [ 0.0, v2EL, D2 ]  );
 
-for i = 1:2
-    
-    if ( i == 1 )
-        tmpt1Vec = 0 : tStep : D1;
-        tmp1 = 0.7 * (30 * ( tmpt1Vec/D1 ).^2 - 60 * ( tmpt1Vec/D1 ).^3 + 30 * ( tmpt1Vec/D1 ).^4);
-        for j = 1:length( tmp1 )
-            vVec(j) = tmp1(j);
-            vVec1(j) = tmp1(j);
-        end
-    else
-        tmpt2Vec = 0 : tStep : D2;
-        tmp2 =  0.3 * (30 * ( tmpt2Vec/D2 ).^2 - 60 * ( tmpt2Vec/D2 ).^3 + 30 * ( tmpt2Vec/D2 ).^4 );
-%         tmp2 = 0.7 * (30 * ( tmpt2Vec/D2 ).^2 - 60 * ( tmpt2Vec/D2 ).^3 + 30 * ( tmpt2Vec/D2 ).^4 );
-        idxOffset = toffSet/tStep;
-        for j = 1:length( tmp2 )
-            vVec(j + idxOffset) = vVec(j+idxOffset) + tmp2(j);
-            vVec2( idxOffset + j )  =tmp2(j);
-        end
-    end
-    
-end
+T = max( D1, D2 + toff );
 
-tVec = 0:tStep:tWhole;
+%                                         dt  toff  T
+[ ~, v_vec1, t_vec ] = submov1.data_arr(  dt,    0, T );
+[ ~, v_vec2, ~     ] = submov2.data_arr(  dt, toff, T );
+[ ~, v_vec3, ~     ] = submov3.data_arr(  dt,    0, T );
+[ ~, v_vec4, ~     ] = submov4.data_arr(  dt, toff, T );
 
-f = figure(); a = axes('parent', f);
+p1 = plot( t_vec, v_vec1 + v_vec2, 'linestyle', '--', 'color', c.blue   ); hold on
+p2 = plot( t_vec, v_vec3 + v_vec4, 'linestyle', '--', 'color', c.orange );
 
-pVec = cumsum( vVec * tStep );
-pVec1 = cumsum( vVec1 * tStep );
-pVec2 = cumsum( vVec2 * tStep );
+area( t_vec, v_vec1 + v_vec2, 'FaceColor', p1.Color, 'FaceAlpha', 0.4, 'EdgeAlpha', 0 );
+area( t_vec, v_vec3 + v_vec4, 'FaceColor', p2.Color, 'FaceAlpha', 0.4, 'EdgeAlpha', 0 );
 
-p1 = plot( tVec, vVec1, 'linestyle', '--', 'color', c.blue);
-hold on
-p2 = plot( tVec, vVec2, 'linestyle', '--', 'color', c.orange );
-p  = plot( tVec, vVec, 'color', c.yellow, 'linewidth', 10  );
-% area( tVec, vVec, 'FaceColor', p.Color, 'FaceAlpha', 0.4, 'EdgeAlpha', 0 );
-% area( tVec, vVec1, 'FaceColor', p1.Color, 'FaceAlpha', 0.4, 'EdgeAlpha', 0 );
-% area( tVec, vVec2, 'FaceColor', p2.Color, 'FaceAlpha', 0.4, 'EdgeAlpha', 0 );
 box off
-set(a, 'visible','off')
+set( gca,  'visible','off')
 
 
 %% --- (1A - c) Joint Coordinate Plot

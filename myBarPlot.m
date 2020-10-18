@@ -22,30 +22,23 @@ classdef myBarPlot < handle
     end
 
     properties ( SetAccess = public )
-        name
-        x 
-        y
-        z
-        orig
-        arrowColor
-        arrowWidth
-        arrowHeadSize
+       lb;
+       ub;
+        p;
     end
     
     methods
 
-        function obj = myArrow( x, y, z, orig, varargin )
-            obj.x = x; obj.y = y; obj.z = z;            
-            obj.orig = orig;
-            
-            r = myParser( varargin );                
-            
-            obj.arrowWidth    = r.arrowWidth;
-            obj.arrowColor    = r.arrowColor;
-            obj.arrowHeadSize = r.maxHeadSize;
-                        
+        function obj = myBarPlot( p, lb, ub, varargin )
+            obj.p  =  p; 
+            obj.lb = lb; 
+            obj.ub = ub;   
         end
         
+        function plot( obj )
+            
+            
+        end
 
     end
     
