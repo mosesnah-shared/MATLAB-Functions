@@ -45,9 +45,9 @@ mySaveFig( gcf, 'example' )
 %% --- (2 - a) Parsing the txt File 
 
 % For the animation, you need to have the 'data_log.txt' file.
-data = myTxtParse( 'data_log.txt' );
+data = myTxtParse( 'data_log_T3.txt' );
 
-idx = 1;                                                                   % Choosing Target 1 to 3.
+idx = 3;                                                                   % Choosing Target 1 to 3.
 
 if     idx == 1
     c_m = c.pink;
@@ -63,22 +63,18 @@ end
 dt    = data.currentTime( 2 ) - data.currentTime( 1 );                     % Time Step of the simulation
 nodeN = size( data.geomXYZPositions, 1) / 3 ;                              % Number of markers of the simulation, dividing by 3 (x-y-z) gives us the number of geometry.
 
-mov_pars = [-2.06822,-0.27925,-0.27925, 2.40855, 0.01571, 0.     ,-0.83776, 1.5708 , 2.09963, 0.     , 0.80673, 0.03491, 1.21667, 0.63333, 0.6];
-pi = mov_pars( 1:4  );
-pm = mov_pars( 5:8  );
-pf = mov_pars( 9:12 );
-
-D1   = mov_pars( end - 2 );
-D2   = mov_pars( end - 1 );
-toff = mov_pars( end     );
-
-
-
-
-
-T = max( D1, D2 + toff );
-
-tVec  = ( 0:0.01:T );
+% mov_pars = [-2.06822,-0.27925,-0.27925, 2.40855, 0.01571, 0.     ,-0.83776, 1.5708 , 2.09963, 0.     , 0.80673, 0.03491, 1.21667, 0.63333, 0.6];
+% pi = mov_pars( 1:4  );
+% pm = mov_pars( 5:8  );
+% pf = mov_pars( 9:12 );
+% 
+% D1   = mov_pars( end - 2 );
+% D2   = mov_pars( end - 1 );
+% toff = mov_pars( end     );
+% 
+% T = max( D1, D2 + toff );
+% 
+% tVec  = ( 0:0.01:T );
 
 
 genNodes = @(x) ( "node" + (1:x) );
@@ -102,20 +98,22 @@ ani = my3DAnimation( dt, markers );                                        % Inp
 ani.connectMarkers( 1, [ "SH", "EL", "EE" ], 'linecolor', c.grey )        
                                                                            % Connecting the markers with a line.
 
-tmpLim = 2.5;
+tmpLim = 2.8;
 set( ani.hAxes{ 1 }, 'XLim',   [ -tmpLim , tmpLim ] , ...                  
                      'YLim',   [ -tmpLim , tmpLim ] , ...    
                      'ZLim',   [ -tmpLim , tmpLim ] , ...
-                     'view',   [10   12.8650 ]     )                  % Set the view, xlim, ylim and zlim of the animation
+                     'view',   [       0 ,      0 ] )
+%                      'view',   [41.8506   15.1025 ]     )                  % Set the view, xlim, ylim and zlim of the animation
                                                                            % ani.hAxes{ 1 } is the axes handle for the main animation
-                                                                                                                     
+%                                                                                                                      
 isZFT = true;
 
 if isZFT    % If ZFT Representation is ON
                                                                            % First, we need to calculate the forward kinematics of the 4-DOF upper limb model.
-   ZFT_UL = my4DOF_Robot( [ 0.294, 0.291] );                               % The length of the upperarm and forearm, respectively.  
-   [ pSH, pEL, pEE ] = ZFT_UL.forwardKinematics( data.pZFT );
-   
+   robot = my2DOFRobot( );                               % The length of the upperarm and forearm, respectively.  
+   pEL   = robot.calcForwardKinematics( 2, [0;0;0], data.pZFT - [pi/2;0] );
+   pEE   = robot.calcForwardKinematics( 2, [0.291;0;0], data.pZFT  - [pi/2;0]);
+   pSH   = zeros( 2, length( pEL ) );
    ani.addGraphicObject( 1, myMarker( pEL( 1, : ), pEL( 2, : ), pEL( 3, : ), 'markerSize', 13, 'name', "EL_ZFT", 'markerColor', c_m, 'markerAlpha', 0.5 ) );
    ani.addGraphicObject( 1, myMarker( pEE( 1, : ), pEE( 2, : ), pEE( 3, : ), 'markerSize', 13, 'name', "EE_ZFT", 'markerColor', c_m, 'markerAlpha', 0.5 ) );
    ani.connectMarkers( 1, [ "SH", "EL_ZFT" "EE_ZFT" ], 'linecolor', c.grey, 'lineWidth', 3, 'lineStyle', '--' );
@@ -123,50 +121,45 @@ if isZFT    % If ZFT Representation is ON
 end
 
 % TARGET (1:3) SH (4:6) EL (7:9) EE(10:12)
-v_EE = data.geomXYZVelocity( 10:12,  : );
-v_EE_m = sqrt( sum( v_EE.^2 ) );
-
-tmp1 = my2DLine( data.currentTime, v_EE_m, 'linecolor', c.pink,   'linestyle', '--', 'linewidth', 3 );
+% v_EE = data.geomXYZVelocity( 10:12,  : );
+% v_EE_m = sqrt( sum( v_EE.^2 ) );
+% 
+% tmp1 = my2DLine( data.currentTime, v_EE_m, 'linecolor', c.pink,   'linestyle', '--', 'linewidth', 3 );
 
 % tmp1 = my2DLine( data.currentTime, data.vZFT( 1, : ), 'linecolor', c.pink,   'linestyle', '--', 'linewidth', 3 );
 % tmp2 = my2DLine( data.currentTime, data.vZFT( 2, : ), 'linecolor', c.green,  'linestyle', '--', 'linewidth', 3 );
 % tmp3 = my2DLine( data.currentTime, data.vZFT( 3, : ), 'linecolor', c.blue,   'linestyle', '--', 'linewidth', 3 );
 % tmp4 = my2DLine( data.currentTime, data.vZFT( 4, : ), 'linecolor', c.yellow, 'linestyle', '--', 'linewidth', 3 );
 
-% tmp11 = my2DLine( data.currentTime, data.jointVelActual( 1, : ), 'linecolor', c.pink,   'linestyle', '-', 'linewidth', 6 );
-% tmp22 = my2DLine( data.currentTime, data.jointVelActual( 2, : ), 'linecolor', c.green,  'linestyle', '-', 'linewidth', 6 );
-% tmp33 = my2DLine( data.currentTime, data.jointVelActual( 3, : ), 'linecolor', c.blue,   'linestyle', '-', 'linewidth', 6 );
-% tmp44 = my2DLine( data.currentTime, data.jointVelActual( 4, : ), 'linecolor', c.yellow, 'linestyle', '-', 'linewidth', 6 );
-
-ani.addTrackingPlots( 2, tmp11 );           
+% tmp11 = my2DLine( data.currentTime, data.jointAngleActual( 1, : ), 'linecolor', c.pink,   'linestyle', '-', 'linewidth', 6 );
+% tmp22 = my2DLine( data.currentTime, data.jointAngleActual( 2, : ), 'linecolor', c.green,  'linestyle', '-', 'linewidth', 6 );
+% tmp33 = my2DLine( data.currentTime, data.jointAngleActual( 3, : ), 'linecolor', c.blue,   'linestyle', '-', 'linewidth', 6 );
+% % tmp44 = my2DLine( data.currentTime, data.jointAngleActual( 4, : ), 'linecolor', c.yellow, 'linestyle', '-', 'linewidth', 6 );
+% 
+% ani.addTrackingPlots( 2, tmp11 );           
 % ani.addTrackingPlots( 2, tmp22 );           
 % ani.addTrackingPlots( 2, tmp33 );           
 % ani.addTrackingPlots( 2, tmp44 );      
+% 
+% % plot( ani.hAxes{ 2 }, data.currentTime, data.pZFT( 1, : ), 'color', c.pink,   'linestyle', '--', 'linewidth', 3 );
+% % plot( ani.hAxes{ 2 }, data.currentTime, data.pZFT( 2, : ), 'color', c.green,  'linestyle', '--', 'linewidth', 3 );
+% plot( ani.hAxes{ 2 }, data.currentTime, data.pZFT( 3, : ), 'color', c.blue,   'linestyle', '--', 'linewidth', 3 );
+% plot( ani.hAxes{ 2 }, data.currentTime, data.pZFT( 4, : ), 'color', c.yellow, 'linestyle', '--', 'linewidth', 3 );
 
-plot( ani.hAxes{ 2 }, data.currentTime, data.vZFT( 1, : ), 'color', c.pink,   'linestyle', '--', 'linewidth', 3 );
-plot( ani.hAxes{ 2 }, data.currentTime, data.vZFT( 2, : ), 'color', c.green,  'linestyle', '--', 'linewidth', 3 );
-plot( ani.hAxes{ 2 }, data.currentTime, data.vZFT( 3, : ), 'color', c.blue,   'linestyle', '--', 'linewidth', 3 );
-plot( ani.hAxes{ 2 }, data.currentTime, data.vZFT( 4, : ), 'color', c.yellow, 'linestyle', '--', 'linewidth', 3 );
 
+% ani.addZoomWindow( 3, "EE", 0.7 )
 
-%%
-
-plot( data.currentTime, data.vZFT( 1, : ), 'color', c.pink,   'linestyle', '--', 'linewidth', 5 );
-hold on
-plot( data.currentTime, data.vZFT( 2, : ), 'color', c.green,  'linestyle', '--', 'linewidth', 5 );
-plot( data.currentTime, data.vZFT( 3, : ), 'color', c.blue,   'linestyle', '--', 'linewidth', 5 );
-plot( data.currentTime, data.vZFT( 4, : ), 'color', c.yellow, 'linestyle', '--', 'linewidth', 5 );
-
- %%
-ani.addZoomWindow( 3, "EE", 0.7 )
-set( ani.hAxes{ 3 }, 'view',   [10   12.8650 ]     )  
+% set( ani.hAxes{ 3 }, 'view',   [41.8506   15.1025 ]     )  
   
-h = fill( [0.1, 0.1 + T, 0.1 + T , 0.1],[-4,-4,8,8], c.grey, 'parent', ani.hAxes{2});
+% h = fill( [0.1, 0.1 + T, 0.1 + T , 0.1],[-4,-4,8,8], c.grey, 'parent', ani.hAxes{2});
 h.FaceAlpha=0.4; h.EdgeAlpha=0;
 
 % 
+set( ani.hAxes{ 3 }, 'xtick', [] )
+set( ani.hAxes{ 3 }, 'ytick', [] )
+set( ani.hAxes{ 3 }, 'ztick', [] )
 willSave = true;           % Set this as 'true' if you want to save the video
-ani.run( 0.2, willSave, 'output' ) 
+ani.run( 0.2, true, ['output', num2str( 4 ) ] ) 
 
 
 %% --- (2 - C) Running the 3D Animation - Special Plot, showing the ZT postures 
@@ -174,26 +167,28 @@ ani.run( 0.2, willSave, 'output' )
 %% (--) ========================================================
 %% (3-) Quantification of the Movement
 %% --- (3 - a) Parsing the txt File 
-t_start = 0.3;
-t_end   = 0.3 + 0.5833;
-idx_list = find( (data.currentTime >= t_start) & (data.currentTime <= t_end) );
+% t_start = 0.3;
+% t_end   = 0.3 + 0.5833;
+% idx_list = find( (data.currentTime >= t_start) & (data.currentTime <= t_end) );
 
 for idx_J = 1:4
 
 
-if     idx_J == 1
-    tmpc = c.pink;
+    if     idx_J == 1
+        tmpc = c.pink;
+
+    elseif idx_J == 2    
+        tmpc = c.green;
+
+    elseif idx_J == 3
+        tmpc = c.blue;
+
+    elseif idx_J == 4
+        tmpc = c.yellow;
     
-elseif idx_J == 2    
-    tmpc = c.green;
+    end
+   
     
-elseif idx_J == 3
-    tmpc = c.blue;
-    
-elseif idx_J == 4
-    tmpc = c.yellow;
-    
-end
 figure( )
 plot( data.currentTime( idx_list ), data.jointAngleActual( idx_J, idx_list ),  '-', 'linewidth', 5, 'color', tmpc )
 hold on
