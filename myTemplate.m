@@ -81,7 +81,7 @@ genNodes = @(x) ( "node" + (1:x) );
 stringList = [ "Target", "SH", "EL", "EE",  genNodes( nodeN - 4 ) ];       % 3 Upper limb markers + 1 target
 
 % Marker in order, target (1), upper limb (3, SH, EL, WR) and Whip (25) 
-sizeList   = [ 24, 24, 24, 24, 12 * ones( 1, 25 ) ];                        % Setting the size of each markers
+sizeList   = [ 24, 40, 40, 40, 12 * ones( 1, 25 ) ];                        % Setting the size of each markers
 colorList  = [ c_m; repmat( c_m, 3, 1); repmat( c.grey, 25 , 1 ) ];  % Setting the color of each markers
 
 for i = 1: nodeN    % Iterating along each markers
@@ -98,7 +98,7 @@ ani = my3DAnimation( dt, markers );                                        % Inp
 ani.connectMarkers( 1, [ "SH", "EL", "EE" ], 'linecolor', c.grey )        
                                                                            % Connecting the markers with a line.
 
-tmpLim = 2.8;
+tmpLim = 1.0;
 set( ani.hAxes{ 1 }, 'XLim',   [ -tmpLim , tmpLim ] , ...                  
                      'YLim',   [ -tmpLim , tmpLim ] , ...    
                      'ZLim',   [ -tmpLim , tmpLim ] , ...
@@ -114,8 +114,8 @@ if isZFT    % If ZFT Representation is ON
    pEL   = robot.calcForwardKinematics( 2, [0;0;0], data.pZFT - [pi/2;0] );
    pEE   = robot.calcForwardKinematics( 2, [0.291;0;0], data.pZFT  - [pi/2;0]);
    pSH   = zeros( 2, length( pEL ) );
-   ani.addGraphicObject( 1, myMarker( pEL( 1, : ), pEL( 2, : ), pEL( 3, : ), 'markerSize', 13, 'name', "EL_ZFT", 'markerColor', c_m, 'markerAlpha', 0.5 ) );
-   ani.addGraphicObject( 1, myMarker( pEE( 1, : ), pEE( 2, : ), pEE( 3, : ), 'markerSize', 13, 'name', "EE_ZFT", 'markerColor', c_m, 'markerAlpha', 0.5 ) );
+   ani.addGraphicObject( 1, myMarker( pEL( 1, : ), pEL( 2, : ), pEL( 3, : ), 'markerSize', 40, 'name', "EL_ZFT", 'markerColor', c_m, 'markerAlpha', 0.3 ) );
+   ani.addGraphicObject( 1, myMarker( pEE( 1, : ), pEE( 2, : ), pEE( 3, : ), 'markerSize', 40, 'name', "EE_ZFT", 'markerColor', c_m, 'markerAlpha', 0.3 ) );
    ani.connectMarkers( 1, [ "SH", "EL_ZFT" "EE_ZFT" ], 'linecolor', c.grey, 'lineWidth', 3, 'lineStyle', '--' );
    
 end
@@ -131,35 +131,52 @@ end
 % tmp3 = my2DLine( data.currentTime, data.vZFT( 3, : ), 'linecolor', c.blue,   'linestyle', '--', 'linewidth', 3 );
 % tmp4 = my2DLine( data.currentTime, data.vZFT( 4, : ), 'linecolor', c.yellow, 'linestyle', '--', 'linewidth', 3 );
 
-% tmp11 = my2DLine( data.currentTime, data.jointAngleActual( 1, : ), 'linecolor', c.pink,   'linestyle', '-', 'linewidth', 6 );
-% tmp22 = my2DLine( data.currentTime, data.jointAngleActual( 2, : ), 'linecolor', c.green,  'linestyle', '-', 'linewidth', 6 );
+tmp11 = my2DLine( data.currentTime, data.jointAngleActual( 1, : ), 'linecolor', c.pink,   'linestyle', '-', 'linewidth', 6 );
+tmp22 = my2DLine( data.currentTime, data.jointAngleActual( 2, : ), 'linecolor', c.green,  'linestyle', '-', 'linewidth', 6 );
 % tmp33 = my2DLine( data.currentTime, data.jointAngleActual( 3, : ), 'linecolor', c.blue,   'linestyle', '-', 'linewidth', 6 );
 % % tmp44 = my2DLine( data.currentTime, data.jointAngleActual( 4, : ), 'linecolor', c.yellow, 'linestyle', '-', 'linewidth', 6 );
 % 
-% ani.addTrackingPlots( 2, tmp11 );           
-% ani.addTrackingPlots( 2, tmp22 );           
+ani.addTrackingPlots( 2, tmp11 );           
+ani.addTrackingPlots( 2, tmp22 );           
 % ani.addTrackingPlots( 2, tmp33 );           
 % ani.addTrackingPlots( 2, tmp44 );      
 % 
-% % plot( ani.hAxes{ 2 }, data.currentTime, data.pZFT( 1, : ), 'color', c.pink,   'linestyle', '--', 'linewidth', 3 );
-% % plot( ani.hAxes{ 2 }, data.currentTime, data.pZFT( 2, : ), 'color', c.green,  'linestyle', '--', 'linewidth', 3 );
+plot( ani.hAxes{ 2 }, data.currentTime, data.pZFT( 1, : ), 'color', c.pink,   'linestyle', '--', 'linewidth', 3 );
+plot( ani.hAxes{ 2 }, data.currentTime, data.pZFT( 2, : ), 'color', c.green,  'linestyle', '--', 'linewidth', 3 );
 % plot( ani.hAxes{ 2 }, data.currentTime, data.pZFT( 3, : ), 'color', c.blue,   'linestyle', '--', 'linewidth', 3 );
 % plot( ani.hAxes{ 2 }, data.currentTime, data.pZFT( 4, : ), 'color', c.yellow, 'linestyle', '--', 'linewidth', 3 );
 
 
+ani.addGraphicObject( 3, myMarker( data.pZFT(1,:), zeros(1,length(data.currentTime) ), data.pZFT(2,:),'markerSize', 60, 'markerColor', c.blue, 'markerAlpha', 1 ) );
+tmp = plot3( ani.hAxes{ 3 }, data.pZFT(1,:),  zeros(1,length(data.currentTime)), data.pZFT( 2, : ), 'color', c.blue,  'linestyle', '--', 'linewidth', 3 );
+tmp.Color(4) =  0.3;
+scatter3( ani.hAxes{ 3 }, data.pZFT(1,1), 0, data.pZFT( 2, 1 )    , 150, 'markeredgecolor', c.blue,  'markerfacecolor', c.white, 'linewidth', 2  );
+scatter3( ani.hAxes{ 3 }, data.pZFT(1,end), 0, data.pZFT( 2, end ), 150, 'markeredgecolor', c.blue,  'markerfacecolor', c.white, 'linewidth', 2  );
+
+set( ani.hAxes{ 3 }, 'view',   [0   0]     )  
+
+tmpLim = 3;
+set( ani.hAxes{ 3 }, 'XLim',   [ -tmpLim , tmpLim ] , ...                  
+                     'YLim',   [ -tmpLim , tmpLim ] , ...    
+                     'ZLim',   [ -tmpLim , tmpLim ] , ...
+                     'view',   [       0 ,      0 ] )
+set( ani.hAxes{ 3 }, 'xtick', [], 'ytick', [], 'ztick', []  )
+
 % ani.addZoomWindow( 3, "EE", 0.7 )
+
+set( ani.hAxes{ 2 }, 'xlim', [0,  1.0] )  
 
 % set( ani.hAxes{ 3 }, 'view',   [41.8506   15.1025 ]     )  
   
 % h = fill( [0.1, 0.1 + T, 0.1 + T , 0.1],[-4,-4,8,8], c.grey, 'parent', ani.hAxes{2});
-h.FaceAlpha=0.4; h.EdgeAlpha=0;
+% h.FaceAlpha=0.4; h.EdgeAlpha=0;
 
 % 
-set( ani.hAxes{ 3 }, 'xtick', [] )
-set( ani.hAxes{ 3 }, 'ytick', [] )
-set( ani.hAxes{ 3 }, 'ztick', [] )
+% set( ani.hAxes{ 3 }, 'xtick', [] )
+% set( ani.hAxes{ 3 }, 'ytick', [] )
+% set( ani.hAxes{ 3 }, 'ztick', [] )
 willSave = true;           % Set this as 'true' if you want to save the video
-ani.run( 0.2, true, ['output', num2str( 4 ) ] ) 
+ani.run( 0.33, willSave, ['output', num2str( 4 ) ] ) 
 
 
 %% --- (2 - C) Running the 3D Animation - Special Plot, showing the ZT postures 
