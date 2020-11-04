@@ -237,7 +237,7 @@ classdef my2DOFRobot < handle
         % ================================================================              
             tmp = obj.jacobian( idx, L );
             tmp = obj.substitute( tmp, {'L', 'Lc'}, obj.r );
-            tmp = double( subs( tmp, {'q1', 'q2'}, { qarr( 1, : ), qarr( 1, : ) } ) );
+            tmp = double( subs( tmp, {'q1', 'q2'}, { qarr( 1, : ), qarr( 2, : ) } ) );
             
             % For returning a 3D matrix, 
             nc1 = length( obj.L ); nc2 = length( qarr( 1, : ) );

@@ -130,6 +130,54 @@ classdef my4DOFRobot < my2DOFRobot
 
         end
         
+        function pos = calcForwardKinematics( obj, idx, L , qarr )
+        % Calculating the xyz position of the given point    
+        % ================================================================             
+        % [INPUT]
+        %    (1) idx, 1 is the first link, 2 is the 2nd link
+        %    (2) L is the length of the point where the jacobian should be calculated. 
+        %    (3) qarr is the relative angle array of the 2DOF robot.
+        %        size will be 2-by-N
+        % ================================================================ 
+        % [OUTPUT]
+        %    (1) position of the given point, 3-by-N matrix
+        % ================================================================              
+            pos = obj.forwardKinematics( idx, L );
+            pos = obj.substitute( pos, {'L', 'Lc'}, obj.r );
+            pos = double( subs( pos, {'q1', 'q2', 'q3', 'q4'}, ...
+                            { qarr( 1, : ), qarr( 2, : ), qarr( 3, : ), qarr( 4, : ) } ) );
+            
+        end
+        
+        
+        function J = calcJacobian( obj, idx, L, qarr )
+        % Calculating the xyz position of the given point    
+        % ================================================================             
+        % [INPUT]
+        %    (1) idx, 1 is the first link, 2 is the 2nd link
+        %    (2) L is the length of the point where the jacobian should be calculated. 
+        %    (3) qarr is the relative angle array of the 2DOF robot.
+        %        size will be 2-by-N
+        % ================================================================ 
+        % [OUTPUT]
+        %    (1) position of the given point, 3-by-N matrix
+        % ================================================================              
+            tmp = obj.jacobian( idx, L );
+            tmp = obj.substitute( tmp, {'L', 'Lc'}, obj.r );
+            tmp = double( subs( tmp, {'q1', 'q2', 'q3',  'q4'}, ...
+                                      { qarr( 1, : ), qarr( 2, : ), qarr( 3, : ), qarr( 4, : ) } ) );
+            
+            % For returning a 3D matrix, 
+            nc1 = 4; nc2 = length( qarr( 1, : ) );
+            
+            J = zeros( 3, nc1, nc2 );
+            
+            for i = 1 : nc2
+                J( :, :, i ) = tmp( :, i : nc2 : end );
+            end
+            
+        end
+        
         
         function G = getG( obj )
         % Calculating the gravity matrix of the model 
