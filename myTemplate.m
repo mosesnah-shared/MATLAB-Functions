@@ -44,29 +44,12 @@ mySaveFig( gcf, 'example' )
 %% (2-) Generating 3D Animation
 %% --- (2 - a) Parsing the txt File 
 
-% For the animation, you need to have the 'data_log.txt' file.
-data = myTxtParse( 'data_log_T3.txt' );
-
-idx = 3;                                                                   % Choosing Target 1 to 3.
-
-if     idx == 1
-    c_m = c.pink;
-elseif idx == 2
-    c_m = c.blue;
-elseif idx == 3    
-    c_m = c.green;
-end
-    
-
-%% --- (2 - b) Running the 3D Animation - Basic Movement
-
-c_m  = c.pink;
-
+c_m  = c.blue;
 
 dt    = data.currentTime( 2 ) - data.currentTime( 1 );                     % Time Step of the simulation
 nodeN = size( data.geomXYZPositions, 1) / 3 ;                              % Number of markers of the simulation, dividing by 3 (x-y-z) gives us the number of geometry.
 
-mov_pars = [-2.06822,-0.27925,-0.27925, 2.40855, 0.01571, 0.     ,-0.83776, 1.5708 , 2.09963, 0.     , 0.80673, 0.03491, 1.21667, 0.63333, 0.6];
+mov_pars = [0.015710,-0.930840,0.186170,1.291540,-2.068220,0.000000,-0.837760,0.733040,0.247250,-1.117010,0.279250,1.198460,0.583330,0.990740,0.800000];
 pi = mov_pars( 1:4  );
 pm = mov_pars( 5:8  );
 pf = mov_pars( 9:12 );
@@ -123,7 +106,7 @@ set( ani.hAxes{ 1 }, 'XLim',   [ -tmpLim , tmpLim ] , ...
                      'YLim',   [ -tmpLim , tmpLim ] , ...    
                      'ZLim',   [ -tmpLim , tmpLim ] , ...
                      'view',   [32.8506   15.1025 ] )
-%                      'view',   [41.8506   15.1025 ]     )                  % Set the view, xlim, ylim and zlim of the animation
+%                      'view',   [41.8506   15.1025 ]     )                
                                                                            % ani.hAxes{ 1 } is the axes handle for the main animation
 %                                                                                                                      
 isZFT = true;
@@ -141,32 +124,33 @@ if isZFT    % If ZFT Representation is ON
 end
 
 % TARGET (1:3) SH (4:6) EL (7:9) EE(10:12)
-% v_EE = data.geomXYZVelocity( 10:12,  : );
-% v_EE_m = sqrt( sum( v_EE.^2 ) );
+v_EE = data.geomXYZVelocity( 10:12,  : );
+v_EE_m = sqrt( sum( v_EE.^2 ) );
 % plot( data.currentTime,  v_EE_m );
-% tmp1 = my2DLine( data.currentTime, v_EE_m, 'linecolor', c.pink,   'linestyle', '--', 'linewidth', 3 );
+tmp1 = my2DLine( data.currentTime, v_EE_m, 'linecolor', c.purple_plum,   'linestyle', '-', 'linewidth', 6 );
 
-tmp11 = my2DLine( data.currentTime, data.jointVelActual( 1, : ), 'linecolor', c.pink,   'linestyle', '-', 'linewidth', 6 );
+ani.addTrackingPlots( 2, tmp1 );           
+
+
+% tmp11 = my2DLine( data.currentTime, data.jointVelActual( 1, : ), 'linecolor', c.pink,   'linestyle', '-', 'linewidth', 6 );
 % tmp22 = my2DLine( data.currentTime, data.jointVelActual( 2, : ), 'linecolor', c.green,  'linestyle', '-', 'linewidth', 6 );
 % tmp33 = my2DLine( data.currentTime, data.jointVelActual( 3, : ), 'linecolor', c.blue,   'linestyle', '-', 'linewidth', 6 );
 % tmp44 = my2DLine( data.currentTime, data.jointVelActual( 4, : ), 'linecolor', c.yellow, 'linestyle', '-', 'linewidth', 6 );
-
-ani.addTrackingPlots( 2, tmp11 );           
+% ani.addTrackingPlots( 2, tmp11 );           
 % ani.addTrackingPlots( 2, tmp22 );           
 % ani.addTrackingPlots( 2, tmp33 );           
 % ani.addTrackingPlots( 2, tmp44 );  
 
-a1 = area( t_vec, v_vec1, 'FaceColor',  c.yellow );  
-a1.FaceAlpha = 0.2; a1.EdgeAlpha = 0;
-
-a2 = area( t_vec, v_vec5, 'FaceColor',  c.yellow );  
-a2.FaceAlpha = 0.2; a2.EdgeAlpha = 0;
-
+% a1 = area( t_vec, v_vec1, 'FaceColor',  c.yellow );  
+% a1.FaceAlpha = 0.2; a1.EdgeAlpha = 0;
+% 
+% a2 = area( t_vec, v_vec5, 'FaceColor',  c.yellow );  
+% a2.FaceAlpha = 0.2; a2.EdgeAlpha = 0;
 
 plot( ani.hAxes{ 2 }, data.currentTime, data.vZFT( 1, : ), 'color', c.pink,   'linestyle', '--', 'linewidth', 3 );
-% plot( ani.hAxes{ 2 }, data.currentTime, data.vZFT( 2, : ), 'color', c.green,  'linestyle', '--', 'linewidth', 3 );
-% plot( ani.hAxes{ 2 }, data.currentTime, data.vZFT( 3, : ), 'color', c.blue,   'linestyle', '--', 'linewidth', 3 );
-% plot( ani.hAxes{ 2 }, data.currentTime, data.vZFT( 4, : ), 'color', c.yellow, 'linestyle', '--', 'linewidth', 3 );
+plot( ani.hAxes{ 2 }, data.currentTime, data.vZFT( 2, : ), 'color', c.green,  'linestyle', '--', 'linewidth', 3 );
+plot( ani.hAxes{ 2 }, data.currentTime, data.vZFT( 3, : ), 'color', c.blue,   'linestyle', '--', 'linewidth', 3 );
+plot( ani.hAxes{ 2 }, data.currentTime, data.vZFT( 4, : ), 'color', c.yellow, 'linestyle', '--', 'linewidth', 3 );
 
 % ani.addGraphicObject( 3, myMarker( data.pZFT(1,:), zeros(1,length(data.currentTime) ), data.pZFT(2,:),'markerSize', 60, 'markerColor', c.blue, 'markerAlpha', 1 ) );
 % tmp = plot3( ani.hAxes{ 3 }, data.pZFT(1,:),  zeros(1,length(data.currentTime)), data.pZFT( 2, : ), 'color', c.blue,  'linestyle', '--', 'linewidth', 3 );
@@ -183,24 +167,188 @@ plot( ani.hAxes{ 2 }, data.currentTime, data.vZFT( 1, : ), 'color', c.pink,   'l
 %                      'view',   [       0 ,      0 ] )
 % set( ani.hAxes{ 3 }, 'xtick', [], 'ytick', [], 'ztick', []  )
 
-% ani.addZoomWindow( 3, "EE", 0.7 )
-
 % set( ani.hAxes{ 2 }, 'xlim', [0,  1.0] )  
 
 % set( ani.hAxes{ 3 }, 'view',   [41.8506   15.1025 ]     )  
   
+% h = fill( [0, 1, 1, 0],[0,0,6,6], c.grey);
+
 % h = fill( [0.1, 0.1 + T, 0.1 + T , 0.1],[-4,-4,8,8], c.grey, 'parent', ani.hAxes{2});
 % h.FaceAlpha=0.4; h.EdgeAlpha=0;
 
-% 
-% set( ani.hAxes{ 3 }, 'xtick', [] )
-% set( ani.hAxes{ 3 }, 'ytick', [] )
-% set( ani.hAxes{ 3 }, 'ztick', [] )
-willSave = true;           % Set this as 'true' if you want to save the video
-ani.run( 0.33, willSave, ['output', num2str( 4 ) ] ) 
+ani.addZoomWindow( 3, "EE", 0.7 )
+set( ani.hAxes{ 3 }, 'view', get( ani.hAxes{ 1 }, 'view' ) );
+set( ani.hAxes{ 3 }, 'xtick', [], 'ytick', [], 'ztick', [] )
+
+
+ani.run( 0.33, true, 'output' ) 
 
 
 %% --- (2 - C) Running the 3D Animation - Special Plot, showing the ZT postures 
+
+idx = 2;
+
+tmpc = [ c.pink; c.blue; c.green];
+c_m  = tmpc( idx, : );
+
+data  = myTxtParse( ['data_log_T', num2str( idx ), '.txt' ]  );
+%%
+dt    = data.currentTime( 2 ) - data.currentTime( 1 );                     % Time Step of the simulation
+nodeN = size( data.geomXYZPositions, 1) / 3 ;                              % Number of markers of the simulation, dividing by 3 (x-y-z) gives us the number of geometry.
+
+
+genNodes = @(x) ( "node" + (1:x) );
+stringList = [ "Target", "SH", "EL", "EE",  genNodes( nodeN - 4 ) ];       % 3 Upper limb markers + 1 target
+
+% Marker in order, target (1), upper limb (3, SH, EL, WR) and Whip (25) 
+sizeList   = [ 24, 40, 40, 40, 12 * ones( 1, 25 ) ];                        % Setting the size of each markers
+colorList  = [ c_m; repmat( c_m, 3, 1); repmat( c.grey, 25 , 1 ) ];  % Setting the color of each markers
+
+for i = 1: nodeN    % Iterating along each markers
+    markers( i ) = myMarker( data.geomXYZPositions( 3 * i - 2, : ), ... 
+                             data.geomXYZPositions( 3 * i - 1, : ), ... 
+                             data.geomXYZPositions( 3 * i    , : ), ...
+                                          'name', stringList( i ) , ...
+                                    'markersize',   sizeList( i ) , ...
+                                   'markercolor',  colorList( i, : ) );    % Defining the markers for the plot
+end
+
+
+ani = my3DAnimation( dt, markers );                                   
+ani.connectMarkers( 1, [ "SH", "EL", "EE" ], 'linecolor', c.grey )        
+                                                                      
+
+tmpLim = 2.5;
+set( ani.hAxes{ 1 }, 'XLim',   [ -tmpLim , tmpLim ] , ...                  
+                     'YLim',   [ -tmpLim , tmpLim ] , ...    
+                     'ZLim',   [ -tmpLim , tmpLim ] , ...
+                     'view',   [32.8506   15.1025 ] )
+%                      'view',   [41.8506   15.1025 ]     )      
+
+
+                                         
+robot = my4DOFRobot( );                  
+pEL   = robot.calcForwardKinematics( 2, [0;0;0], data.pZFT );
+pEE   = robot.calcForwardKinematics( 2, [0;0;-0.291], data.pZFT );
+pSH   = zeros( 2, length( pEL ) );
+ani.addGraphicObject( 1, myMarker( pEL( 1, : ), pEL( 2, : ), pEL( 3, : ), 'markerSize', 40, 'name', "EL_ZFT", 'markerColor', c_m, 'markerAlpha', 0.3 ) );
+ani.addGraphicObject( 1, myMarker( pEE( 1, : ), pEE( 2, : ), pEE( 3, : ), 'markerSize', 40, 'name', "EE_ZFT", 'markerColor', c_m, 'markerAlpha', 0.3 ) );
+ani.connectMarkers( 1, [ "SH", "EL_ZFT" "EE_ZFT" ], 'linecolor', c.grey, 'lineWidth', 3, 'lineStyle', '--' );
+
+ani.addZoomWindow( 3, "EE", 0.7 )
+set( ani.hAxes{ 3 }, 'view', get( ani.hAxes{ 1 }, 'view' ) );
+set( ani.hAxes{ 3 }, 'xtick', [], 'ytick', [], 'ztick', [] )
+
+v_EE = data.geomXYZVelocity( 10:12,  : );
+v_EE_m = sqrt( sum( v_EE.^2 ) );
+
+% tmp1 = my2DLine( data.currentTime, v_EE_m, 'linecolor', c.purple_plum,   'linestyle', '-', 'linewidth', 6 );
+% ani.addTrackingPlots( 2, tmp1 );           
+% 
+% tmp2 = my2DLine( data.currentTime, data.outputVal, 'linecolor', c.pink,   'linestyle', '-', 'linewidth', 4 );
+% ani.addTrackingPlots( 2, tmp2 );           
+
+tmp11 = my2DLine( data.currentTime, data.vZFT( 1, : ), 'linecolor', c.pink,   'linestyle', '-', 'linewidth', 6 );
+tmp22 = my2DLine( data.currentTime, data.vZFT( 2, : ), 'linecolor', c.green,  'linestyle', '-', 'linewidth', 6 );
+tmp33 = my2DLine( data.currentTime, data.vZFT( 3, : ), 'linecolor', c.blue,   'linestyle', '-', 'linewidth', 6 );
+tmp44 = my2DLine( data.currentTime, data.vZFT( 4, : ), 'linecolor', c.yellow, 'linestyle', '-', 'linewidth', 6 );
+
+ani.addTrackingPlots( 2, tmp11 );           
+ani.addTrackingPlots( 2, tmp22 );           
+ani.addTrackingPlots( 2, tmp33 );           
+ani.addTrackingPlots( 2, tmp44 );  
+% 
+% plot( ani.hAxes{ 2 }, data.currentTime, data.pZFT( 1, : ), 'color', c.pink,   'linestyle', '--', 'linewidth', 3 );
+% plot( ani.hAxes{ 2 }, data.currentTime, data.pZFT( 2, : ), 'color', c.green,  'linestyle', '--', 'linewidth', 3 );
+% plot( ani.hAxes{ 2 }, data.currentTime, data.pZFT( 3, : ), 'color', c.blue,   'linestyle', '--', 'linewidth', 3 );
+% plot( ani.hAxes{ 2 }, data.currentTime, data.pZFT( 4, : ), 'color', c.yellow, 'linestyle', '--', 'linewidth', 3 );
+
+plot( ani.hAxes{ 2 }, data.currentTime, data.vZFT( 1, : ), 'color', c.pink,   'linestyle', '--', 'linewidth', 3 );
+plot( ani.hAxes{ 2 }, data.currentTime, data.vZFT( 2, : ), 'color', c.green,  'linestyle', '--', 'linewidth', 3 );
+plot( ani.hAxes{ 2 }, data.currentTime, data.vZFT( 3, : ), 'color', c.blue,   'linestyle', '--', 'linewidth', 3 );
+plot( ani.hAxes{ 2 }, data.currentTime, data.vZFT( 4, : ), 'color', c.yellow, 'linestyle', '--', 'linewidth', 3 );
+
+
+ani.run( 0.33, true, ['output', num2str( idx ) ]  ) 
+
+%%
+
+mov_pars = [-0.94248, 0.81449,-1.39626, 1.72788, 2.67035,-0.69813,-1.39626, 0.05236, 0.95   ];
+pi = mov_pars( 1:4 );
+pf = mov_pars( 5:8 );
+D  = mov_pars( end );
+ 
+sub1 = mySubmovement( [pi(1), pf(1), D] );
+sub2 = mySubmovement( [pi(2), pf(2), D] );
+sub3 = mySubmovement( [pi(3), pf(3), D] );
+sub4 = mySubmovement( [pi(4), pf(4), D] );
+
+[ p_vec1, v_vec1, t_vec ] = sub1.data_arr( 0.01,      0.1, 0.1+D );
+[ p_vec2, v_vec2, ~     ] = sub2.data_arr( 0.01,      0.1, 0.1+D );
+[ p_vec3, v_vec3, ~     ] = sub3.data_arr( 0.01,      0.1, 0.1+D );
+[ p_vec4, v_vec4, ~     ] = sub4.data_arr( 0.01,      0.1, 0.1+D );
+
+tmpc = [c.pink; c.green; c.blue; c.yellow ];
+vList = [v_vec1; v_vec2; v_vec3; v_vec4];
+
+for i = 1: 4
+    figure()
+    plot( gca, data.currentTime, data.jointVelActual( i, : ), 'color', tmpc( i, :),   'linestyle', '-', 'linewidth', 6 );
+    hold on 
+    plot( gca, t_vec, vList( i, : ), 'color', tmpc( i, :),   'linestyle', '--', 'linewidth', 3 );
+    a1 = area( t_vec, vList( i, : ), 'FaceColor',  tmpc( i, :)  );  a1.FaceAlpha = 0.2; a1.EdgeAlpha = 0;
+    set( gca, 'xlim', [0.1, 0.1+D] )
+    set( gca, 'ylim', [-10, 10] )
+    mySaveFig( gcf, num2str( i ) ) ;
+end
+
+%%
+
+mov_pars = [0.015710,-0.279250,1.023930,1.012290,-2.068220,1.117010,-0.837760,2.687810,2.099630,-0.093080,0.837760,1.198460,0.827780,0.583330,0.800000];
+pi = mov_pars( 1:4  );
+pm = mov_pars( 5:8  );
+pf = mov_pars( 9:12 );
+% 
+D1   = mov_pars( end - 2 );
+D2   = mov_pars( end - 1 );
+toff = mov_pars( end     );
+ 
+T = max( D1, D2 + toff );
+
+sub1 = mySubmovement( [pi(1), pm(1), D1] );
+sub2 = mySubmovement( [pi(2), pm(2), D1] );
+sub3 = mySubmovement( [pi(3), pm(3), D1] );
+sub4 = mySubmovement( [pi(4), pm(4), D1] );
+
+sub5 = mySubmovement( [pm(1), pf(1), D2] );
+sub6 = mySubmovement( [pm(2), pf(2), D2] );
+sub7 = mySubmovement( [pm(3), pf(3), D2] );
+sub8 = mySubmovement( [pm(4), pf(4), D2] );
+
+[ p_vec1, v_vec1, t_vec ] = sub1.data_arr( 0.01,      0.1, 0.1+T );
+[ p_vec2, v_vec2, ~     ] = sub2.data_arr( 0.01,      0.1, 0.1+T );
+[ p_vec3, v_vec3, ~     ] = sub3.data_arr( 0.01,      0.1, 0.1+T );
+[ p_vec4, v_vec4, ~     ] = sub4.data_arr( 0.01,      0.1, 0.1+T );
+[ p_vec5, v_vec5, ~     ] = sub5.data_arr( 0.01, toff+0.1, 0.1+T );
+[ p_vec6, v_vec6, ~     ] = sub6.data_arr( 0.01, toff+0.1, 0.1+T );
+[ p_vec7, v_vec7, ~     ] = sub7.data_arr( 0.01, toff+0.1, 0.1+T );
+[ p_vec8, v_vec8, ~     ] = sub8.data_arr( 0.01, toff+0.1, 0.1+T );
+
+tmpc = [c.pink; c.green; c.blue; c.yellow ];
+vList = [v_vec1; v_vec2; v_vec3; v_vec4; v_vec5; v_vec6; v_vec7; v_vec8];
+
+for i = 1: 4
+    figure()
+    plot( gca, data.currentTime, data.jointVelActual( i, : ), 'color', tmpc( i, :),   'linestyle', '-', 'linewidth', 6 );
+    hold on 
+    plot( gca, t_vec, vList( i, : ) + vList( i+4, : ), 'color', tmpc( i, :),   'linestyle', '--', 'linewidth', 3 );
+    a1 = area( t_vec, vList( i, : ) , 'FaceColor',  tmpc( i, :)  );      a1.FaceAlpha = 0.4; a1.EdgeAlpha = 0.1;
+    a2 = area( t_vec, vList( i + 4, : ) , 'FaceColor',  tmpc( i, :)  );  a2.FaceAlpha = 0.4; a2.EdgeAlpha = 0.1;
+    set( gca, 'xlim', [0.1, 0.1+max( D1, D2 + toff )] )
+    set( gca, 'ylim', [-10, 14] )
+    mySaveFig( gcf, num2str( i ) ) ;
+end
+
 
 %% (--) ========================================================
 %% (3-) Quantification of the Movement
