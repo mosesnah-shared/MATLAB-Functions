@@ -192,16 +192,22 @@ set( a,   'XLim',   [ - tmpLim, tmpLim ] , ...                             % Set
                
 % trisurf( kEL, xEL, yEL, zEL, 'Facecolor',  c.blue, 'FaceAlpha', 0.1, 'EdgeColor', 'none' );
 % trisurf( kEE, xEE, yEE, zEE, 'Facecolor', c.green, 'FaceAlpha', 0.1, 'EdgeColor', 'none' );
+
+xEE = d3.geomXYZPositions( 10, : );
+yEE = d3.geomXYZPositions( 11, : );
+zEE = d3.geomXYZPositions( 12, : );
+
 [xx, yy] = meshgrid( xEE, yEE );
 C = planefit( xEE, yEE, zEE );
 zzft = C( 1 ) * xx + C( 2 ) * yy + C( 3 );
 surf( xx, yy, zzft, 'edgecolor', 'none', 'facecolor', c.green, 'facealpha', 0.3 )
-      
-      
+hold on
+plot3( xEE, yEE, zEE, 'o' );
+axis equal
 % p3 = plot3(  rawData{ idx }.geomXPositions( 5:end, tIdx( i ) ), ...
 %              rawData{ idx }.geomYPositions( 5:end, tIdx( i ) ), ...
 %              rawData{ idx }.geomZPositions( 5:end, tIdx( i ) ), ...
-%              'parent', a, ...
+%              'parent', a, ..
 %             'linewidth', 6, 'color', [ c.purple_plum, alpha( i ) ] );
 
 % mySaveFig( f, ['output', num2str( idx )] );
