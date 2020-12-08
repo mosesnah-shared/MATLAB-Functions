@@ -44,19 +44,21 @@ mySaveFig( gcf, 'example' )
 %% (2-) Generating 3D Animation
 %% --- (2 - a) Parsing the txt File 
 
-c_m  = c.green;
+data = myTxtParse( 'data_log.txt' );
+
+c_m  = c.blue;
 
 dt    = data.currentTime( 2 ) - data.currentTime( 1 );                     % Time Step of the simulation
 nodeN = size( data.geomXYZPositions, 1) / 3 ;                              % Number of markers of the simulation, dividing by 3 (x-y-z) gives us the number of geometry.
 
 mov_pars = [0.015710,0.558510,-0.934290,2.408550,-2.068220,0.000000,-1.117010,0.733040,2.022450,0.000000,0.834310,0.315880,0.583330,1.316670,0.797810];
-pi = mov_pars( 1:4  );
-pm = mov_pars( 5:8  );
-pf = mov_pars( 9:12 );
+% pi = mov_pars( 1:4  );
+% pm = mov_pars( 5:8  );
+% pf = mov_pars( 9:12 );
 % 
-D1   = mov_pars( end - 2 );
-D2   = mov_pars( end - 1 );
-toff = mov_pars( end     );
+% D1   = mov_pars( end - 2 );
+% D2   = mov_pars( end - 1 );
+% toff = mov_pars( end     );
  
 T = max( D1, D2 + toff );
 
@@ -110,10 +112,10 @@ set( ani.hAxes{ 1 }, 'XLim',   [ -tmpLim , tmpLim ] , ...
 %                      'view',   [23.8506   15.1025 ] )
 %                      'view',   [41.8506   15.1025 ]     )                
 
-robot = my4DOFRobot( );                               
-pEL   = robot.calcForwardKinematics( 2, [0;0;     0], data.pZFT  );
-pEE   = robot.calcForwardKinematics( 2, [0;0;-0.291], data.pZFT  );
-pSH   = zeros( 2, length( pEL ) );
+robot = my2DOFRobot( );                               
+% pEL   = robot.calcForwardKinematics( 2, [0;0;     0], data.pZFT  );
+% pEE   = robot.calcForwardKinematics( 2, [0;0;-0.291], data.pZFT  );
+% pSH   = zeros( 2, length( pEL ) );
 ani.addGraphicObject( 1, myMarker( pEL( 1, : ), pEL( 2, : ), pEL( 3, : ), 'markerSize', 40, 'name', "EL_ZFT", 'markerColor', c_m, 'markerAlpha', 0.3 ) );
 ani.addGraphicObject( 1, myMarker( pEE( 1, : ), pEE( 2, : ), pEE( 3, : ), 'markerSize', 40, 'name', "EE_ZFT", 'markerColor', c_m, 'markerAlpha', 0.3 ) );
 ani.connectMarkers( 1, [ "SH", "EL_ZFT" "EE_ZFT" ], 'linecolor', c.grey, 'lineWidth', 3, 'lineStyle', '--' );
