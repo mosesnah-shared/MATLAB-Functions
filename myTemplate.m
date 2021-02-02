@@ -10,7 +10,11 @@
 
 clear all; close all; clc; workspace;
 
+
 cd( fileparts( matlab.desktop.editor.getActiveFilename ) );                % Setting the current directory (cd) as the current location of this folder. 
+addpath( 'myGraphics' );
+addpath( 'myRobots' );
+addpath( 'myUtils' );
 
 myFigureConfig( 'fontsize', 20, ...
                'lineWidth',  5, ...
@@ -51,6 +55,7 @@ c_m  = c.blue;
 dt    = data.currentTime( 2 ) - data.currentTime( 1 );                     % Time Step of the simulation
 nodeN = size( data.geomXYZPositions, 1) / 3 ;                              % Number of markers of the simulation, dividing by 3 (x-y-z) gives us the number of geometry.
 
+% mov_pars = [-1.40668, 0.14868, 1.46737, 0.12282, 0.81866];
 mov_pars = [0.015710,0.558510,-0.934290,2.408550,-2.068220,0.000000,-1.117010,0.733040,2.022450,0.000000,0.834310,0.315880,0.583330,1.316670,0.797810];
 % pi = mov_pars( 1:4  );
 % pm = mov_pars( 5:8  );

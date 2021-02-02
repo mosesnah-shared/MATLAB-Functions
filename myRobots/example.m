@@ -9,7 +9,7 @@
 clear all; close all; clc; workspace;
 
 cd( fileparts( matlab.desktop.editor.getActiveFilename ) );                % Setting the current directory (cd) as the current location of this folder. 
-addpath( './myGraphics' );
+addpath( './myGraphics' ); addpath( './myUtils' );
 myFigureConfig( 'fontsize', 20, ...
                'lineWidth', 5, ...
               'markerSize', 25    )  
@@ -47,11 +47,11 @@ oldS = [ string( [ robot.q, robot.dq, robot.dqr, robot.ddqr, robot.M, robot.L, r
 % newS: python Style print
 str1 = [ "q"; "dq"; "dqr"; "ddqr" ];                                       
 str2 = "[" + string( ( 0 : robot.nDOF - 1 ) ) + "]";                       % Generating the string array, from 1 ~ nDOF                                                                       
-str3 = [ "M"; "Lc"; "L" ];                                       
+str3 = [ "M"; "L"; "Lc" ];                                       
 str4 = "[" + string( ( 0 : 1 ) ) + "]";                                    % Generating the string array, from 1 ~ nDOF                                                                       
 
-newS = [ reshape(  append( str1, str2 ), 1, [] ), ...
-         reshape(  append( str3, str4 ), 1, [] ), "np.sin", "np.cos", "**2" ];  % Making the mixture of strings for convertion
+newS = [ reshape(  append( str1, str2 )', 1, [] ), ...
+         reshape(  append( str3, str4 )', 1, [] ), "np.sin", "np.cos", "**2" ];  % Making the mixture of strings for convertion
 
 for i = 1 : length( oldS )
     tmpY = strrep( tmpY, oldS{ i }, newS{ i } );                           % Replacing 
@@ -115,9 +115,9 @@ dt    = .017;
 tVec  = dt * ( 1 : T/dt ); 
 qMat  = interp1( t, y( 1 : 2 * robot.nDOF, : )', tVec )';                  % Filling in the missing points for the animation
 
-pSH_val  = zeros( 3, length( tVec ) );
-pEL_val = double( subs( pEL, robot.q, num2cell( qMat( 1 : robot.nDOF, : ), 2 )' ) );
-pEE_val = double( subs( pEE, robot.q, num2cell( qMat( 1 : robot.nDOF, : ), 2 )' ) );
+pSH_val  = zeros( 3, length( tVec ) ); 
+pEL_val  = double( subs( pEL, robot.q, num2cell( qMat( 1 : robot.nDOF, : ), 2 )' ) );
+pEE_val  = double( subs( pEE, robot.q, num2cell( qMat( 1 : robot.nDOF, : ), 2 )' ) );   
 
 pos = { pSH_val, pEL_val, pEE_val };
 
@@ -127,24 +127,28 @@ sizeList   = [ 24, 24, 24 ];                                               % Set
 colorList  = [ c.pink; c.green; c.blue ];                                  % Setting the color of each markers
 
 for i = 1 : length( pos )
-   markers( i ) = myMarker( pos{ i }( 1, : ), pos{ i }( 2, :) , pos{ i }(3, : ), ...
-                                                       'name', stringList( i ) , ...
-                                                 'markersize',   sizeList( i ) , ...
-                                                'markercolor',  colorList( i, : ) );    % Defining the markers for the plot
+   gObjs( i ) = myMarker( 'XData', pos{ i }( 1, : ), ... 
+                          'YData', pos{ i }( 2, : ), ...
+                          'ZData', pos{ i }( 3, : ), ...
+                           'name', stringList( i ) , ...
+                       'SizeData',  800            , ...
+                      'LineWidth',   3             , ...
+                'MarkerEdgeColor',  colorList( i, : ) );                   % Defining the markers for the plot
 
 end
 
+ani = myAnimation( dt, gObjs );                                            % Input (1) Time step of sim. 
+                                                                           %       (2) Graphic Objects (Heterogeneouus) Array
 
-ani = my3DAnimation( dt, markers );                                        % Input (1) Time step of sim. (2) Marker Information
-ani.connectMarkers( 1, [ "SH", "EL", "EE" ], 'linecolor', c.grey )        
-
-
+ani.connectMarkers( 1, [ "SH", "EL", "EE" ], 'Color', c.grey )        
 tmpLim = 2.5;
 set( ani.hAxes{ 1 }, 'XLim',   [ -tmpLim , tmpLim ] , ...                  
                      'YLim',   [ -tmpLim , tmpLim ] , ...    
                      'ZLim',   [ -tmpLim , tmpLim ] , ...
                      'view',   [ 0, 0 ]     )           
-                                                      
-                              
-ani.run( 1, T, true, 'output')
+
+ani.addZoomWindow( 3 , "EE", 1);   
+set( ani.hAxes{ 3 }, 'view',   [ 0, 0 ]     )   
+
+ani.run( 1, T, false, 'output')
 
