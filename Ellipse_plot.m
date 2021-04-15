@@ -85,7 +85,7 @@ elseif strcmp(Type,'3D')
     a = 1 / sqrt( D( 1,1 ) );
     b = 1 / sqrt( D( 2,2 ) );
     c = 1 / sqrt( D( 3,3 ) );
-    [X,Y,Z] = ellipsoid( 0, 0, 0, a, b, c, N );
+    [X,Y,Z] = ellipsoid( 0, 0, 0, a, b, c, N );                            
     
     %  rotate and center the ellipsoid to the actual center point
     %------------------------------------------------------------
