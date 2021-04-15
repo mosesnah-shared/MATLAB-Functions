@@ -48,43 +48,12 @@ mySaveFig( gcf, 'example' )
 %% (2-) Generating 3D Animation
 %% --- (2 - a) Parsing the txt File 
 
-data = myTxtParse( 'data_log.txt' );
+data = myTxtParse( 'data_log_sparse_1.txt' );
 
 c_m  = c.blue;
 
 dt    = data.currentTime( 2 ) - data.currentTime( 1 );                     % Time Step of the simulation
 nodeN = size( data.geomXYZPositions, 1) / 3 ;                              % Number of markers of the simulation, dividing by 3 (x-y-z) gives us the number of geometry.
-
-% mov_pars = [-1.40668, 0.14868, 1.46737, 0.12282, 0.81866];
-mov_pars = [0.015710,0.558510,-0.934290,2.408550,-2.068220,0.000000,-1.117010,0.733040,2.022450,0.000000,0.834310,0.315880,0.583330,1.316670,0.797810];
-% pi = mov_pars( 1:4  );
-% pm = mov_pars( 5:8  );
-% pf = mov_pars( 9:12 );
-% 
-% D1   = mov_pars( end - 2 );
-% D2   = mov_pars( end - 1 );
-% toff = mov_pars( end     );
- 
-T = max( D1, D2 + toff );
-
-sub1 = mySubmovement( [pi(1), pm(1), D1] );
-sub2 = mySubmovement( [pi(2), pm(2), D1] );
-sub3 = mySubmovement( [pi(3), pm(3), D1] );
-sub4 = mySubmovement( [pi(4), pm(4), D1] );
-
-sub5 = mySubmovement( [pm(1), pf(1), D2] );
-sub6 = mySubmovement( [pm(2), pf(2), D2] );
-sub7 = mySubmovement( [pm(3), pf(3), D2] );
-sub8 = mySubmovement( [pm(4), pf(4), D2] );
-
-[ p_vec1, v_vec1, t_vec ] = sub1.data_arr( 0.01,      0.1, 0.1+T );
-[ p_vec2, v_vec2, ~     ] = sub2.data_arr( 0.01,      0.1, 0.1+T );
-[ p_vec3, v_vec3, ~     ] = sub3.data_arr( 0.01,      0.1, 0.1+T );
-[ p_vec4, v_vec4, ~     ] = sub4.data_arr( 0.01,      0.1, 0.1+T );
-[ p_vec5, v_vec5, ~     ] = sub5.data_arr( 0.01, toff+0.1, 0.1+T );
-[ p_vec6, v_vec6, ~     ] = sub6.data_arr( 0.01, toff+0.1, 0.1+T );
-[ p_vec7, v_vec7, ~     ] = sub7.data_arr( 0.01, toff+0.1, 0.1+T );
-[ p_vec8, v_vec8, ~     ] = sub8.data_arr( 0.01, toff+0.1, 0.1+T );
 
 
 genNodes = @(x) ( "node" + (1:x) );
@@ -105,7 +74,7 @@ for i = 1: nodeN + 4    % Iterating along each markers
 end
 
 
-ani = my3DAnimation( dt, markers );                                        % Input (1) Time step of sim. (2) Marker Information
+ani = myAnimation( dt, markers );                                        % Input (1) Time step of sim. (2) Marker Information
 ani.connectMarkers( 1, [ "SH", "EL", "EE" ], 'linecolor', c.grey )        
                                                                            % Connecting the markers with a line.
 
@@ -117,7 +86,27 @@ set( ani.hAxes{ 1 }, 'XLim',   [ -tmpLim , tmpLim ] , ...
 %                      'view',   [23.8506   15.1025 ] )
 %                      'view',   [41.8506   15.1025 ]     )                
 
-robot = my2DOFRobot( );                               
+robot = my4DOFRobot( );  
+robot.initialize();
+
+% For animation, the forward kinematics of the elbow and end-effector joint
+pEL = robot.forwardKinematics( 2, [ 0; 0;             0 ] );               % Position of the elbow
+pEE = robot.forwardKinematics( 2, [ 0; 0; -robot.L( 2 ) ] );               % Position of the end-effector
+
+
+sym_array = [ robot.M, robot.L, robot.Lc, reshape( robot.I', 1, [] ), robot.g ];
+val_array = { 1.595, 0.869, ... Mass   of each limb segment, ordered from proximal to distal (upperarm - forearm)
+              0.294, 0.291, ... Length of each limb segment, ordered from proximal to distal (upperarm - forearm)
+              0.129, 0.112, ... Length from proximal joint to center of mass, ordered from proximal to distal (upperarm - forearm)
+             0.0119, 0.0119, 0.0013, ... Moment of inertia of I1xx, I1yy, I1zz, w.r.t. center of mass.
+             0.0048, 0.0049, 0.0005, ... Moment of inertia of I2xx, I2yy, I2zz, w.r.t. center of mass.
+                  9.81 };  % Gravity
+
+
+% Substituting the symbol's values to values
+pEL = subs( pEL, sym_array, val_array );
+pEE = subs( pEE, sym_array, val_array );        
+
 % pEL   = robot.calcForwardKinematics( 2, [0;0;     0], data.pZFT  );
 % pEE   = robot.calcForwardKinematics( 2, [0;0;-0.291], data.pZFT  );
 % pSH   = zeros( 2, length( pEL ) );
